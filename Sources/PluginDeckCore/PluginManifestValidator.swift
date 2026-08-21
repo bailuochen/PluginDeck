@@ -13,6 +13,8 @@ public enum PluginValidationError: LocalizedError, Equatable {
     case actionsRequired
     case invalidAction(String)
     case duplicateAction(String)
+    case unsafeUserInterface
+    case userInterfaceNotFound
     case invalidTrustLevel
     case invalidDistribution(String)
     case manifestNotFound
@@ -31,6 +33,8 @@ public enum PluginValidationError: LocalizedError, Equatable {
         case .actionsRequired: "外部插件至少需要声明一个动作"
         case .invalidAction(let id): "插件动作格式无效：\(id)"
         case .duplicateAction(let id): "插件动作 ID 重复：\(id)"
+        case .unsafeUserInterface: "插件页面必须是包内的安全相对路径"
+        case .userInterfaceNotFound: "插件页面不存在、是符号链接或不是 HTML 文件"
         case .invalidTrustLevel: "自行导入的插件必须标记为 community"
         case .invalidDistribution(let reason): "插件发布信息无效：\(reason)"
         case .manifestNotFound: "所选目录中没有找到 plugin.json"
@@ -39,7 +43,7 @@ public enum PluginValidationError: LocalizedError, Equatable {
 }
 
 public enum PluginManifestValidator {
-    public static let hostVersion = "0.3.0"
+    public static let hostVersion = "0.4.0"
 
     public static func decodeManifest(in directory: URL) throws -> PluginManifest {
         let url = directory.appendingPathComponent("plugin.json")
@@ -115,6 +119,13 @@ public enum PluginManifestValidator {
                     throw PluginValidationError.duplicateAction(action.id)
                 }
             }
+            if let ui = manifest.ui {
+                guard ui.bridgeVersion == 1,
+                      ui.entryPoint.hasSuffix(".html"),
+                      isSafeRelativePath(ui.entryPoint) else {
+                    throw PluginValidationError.unsafeUserInterface
+                }
+            }
             if let packageDirectory {
                 let executable = packageDirectory
                     .appendingPathComponent(entryPoint.executable)
@@ -128,6 +139,19 @@ public enum PluginManifestValidator {
                       values?.isSymbolicLink != true,
                       FileManager.default.isExecutableFile(atPath: executable.path) else {
                     throw PluginValidationError.entryPointNotExecutable
+                }
+                if let ui = manifest.ui {
+                    let page = packageDirectory
+                        .appendingPathComponent(ui.entryPoint)
+                        .standardizedFileURL
+                    let pageValues = try? page.resourceValues(
+                        forKeys: [.isRegularFileKey, .isSymbolicLinkKey]
+                    )
+                    guard page.path.hasPrefix(root.path + "/"),
+                          pageValues?.isRegularFile == true,
+                          pageValues?.isSymbolicLink != true else {
+                        throw PluginValidationError.userInterfaceNotFound
+                    }
                 }
             }
         }

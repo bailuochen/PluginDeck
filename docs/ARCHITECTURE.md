@@ -8,6 +8,8 @@ PluginDeck is a native macOS host for developer-tool plugins. The host owns trus
 
 Third-party code is never loaded into the host process as a Swift bundle or dynamic library. Each executable plugin runs as a child process and exchanges newline-delimited JSON-RPC 2.0 messages over standard input and output.
 
+Plugins may package a local HTML workspace. PluginDeck renders it in a non-persistent `WKWebView` and injects one narrow invocation bridge. The plugin owns its forms, tables and interaction design; the host maps action IDs to the manifest, applies host-level confirmation, starts the backend process and records the task. Navigation outside the package is blocked.
+
 The host must be able to terminate a plugin after a timeout or user cancellation. A malformed response fails the active request without crashing the host.
 
 ## Lifecycle

@@ -2,7 +2,7 @@
 
 PluginDeck 是一个开源的 macOS 开发者插件工作台。它把 NVM、Homebrew、pyenv、Git 等命令行开发工具组织成可发现、可授权、可安装、可追踪的图形化插件。
 
-> 当前状态：早期开发版。平台骨架和完整的官方 NVM 插件模块已经可运行，第三方插件安装协议仍在演进。
+> 当前状态：早期开发版。平台骨架、完整的官方 NVM 插件模块和第三方插件自有页面协议已经可运行。
 
 ![PluginDeck 插件市场](Assets/marketplace.png)
 
@@ -29,6 +29,7 @@ PluginDeck 是一个开源的 macOS 开发者插件工作台。它把 NVM、Home
 - 从本地目录或公开 HTTPS Git 仓库导入社区插件
 - 从远程 Marketplace Catalog 下载并校验 Release ZIP
 - 外部插件独立进程动作、60 秒超时和统一任务记录
+- 插件自带 HTML/CSS/JavaScript 工作区及受控宿主桥接
 
 ## 本地运行
 
@@ -47,14 +48,14 @@ swift test
 构建可直接安装的 DMG：
 
 ```bash
-APP_VERSION=0.3.0 ./scripts/build-dmg.sh
+APP_VERSION=0.4.0 ./scripts/build-dmg.sh
 ```
 
-生成文件位于 `dist/PluginDeck-0.3.0.dmg`。项目通过 GitHub Releases 分发，不要求通过 Mac App Store 发布。未使用 Apple Developer ID 签名的构建首次打开时可能需要在“系统设置 -> 隐私与安全性”中确认。
+生成文件位于 `dist/PluginDeck-0.4.0.dmg`。项目通过 GitHub Releases 分发，不要求通过 Mac App Store 发布。未使用 Apple Developer ID 签名的构建首次打开时可能需要在“系统设置 -> 隐私与安全性”中确认。
 
 ## 插件架构
 
-第三方插件不会作为 Swift 动态库加载进宿主进程。正式插件以独立进程运行，通过窄化、版本化的 JSON-RPC 协议与宿主通信。安装前宿主验证：
+第三方插件不会作为 Swift 动态库加载进宿主进程。插件可以携带自己的本地 HTML 工作区，交互通过受控桥接调用独立后端进程；后端使用版本化 JSON-RPC 协议与宿主通信。安装前宿主验证：
 
 - manifest schema 与插件 ID
 - macOS、CPU 架构和宿主 API 兼容性

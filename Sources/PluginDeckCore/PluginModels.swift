@@ -26,6 +26,16 @@ public struct PluginManifest: Codable, Hashable, Identifiable, Sendable {
         }
     }
 
+    public struct UserInterface: Codable, Hashable, Sendable {
+        public let entryPoint: String
+        public let bridgeVersion: Int
+
+        public init(entryPoint: String, bridgeVersion: Int = 1) {
+            self.entryPoint = entryPoint
+            self.bridgeVersion = bridgeVersion
+        }
+    }
+
     public struct EntryPoint: Codable, Hashable, Sendable {
         public let executable: String
         public let protocolVersion: Int
@@ -143,6 +153,7 @@ public struct PluginManifest: Codable, Hashable, Identifiable, Sendable {
     public let networkDomains: [String]
     public let compatibility: Compatibility
     public let entryPoint: EntryPoint?
+    public let ui: UserInterface?
     public let distribution: Distribution
     public let repositoryURL: URL?
     public let icon: String
@@ -165,6 +176,7 @@ public struct PluginManifest: Codable, Hashable, Identifiable, Sendable {
         networkDomains: [String] = [],
         compatibility: Compatibility,
         entryPoint: EntryPoint? = nil,
+        ui: UserInterface? = nil,
         distribution: Distribution = Distribution(),
         repositoryURL: URL? = nil,
         icon: String,
@@ -186,6 +198,7 @@ public struct PluginManifest: Codable, Hashable, Identifiable, Sendable {
         self.networkDomains = networkDomains
         self.compatibility = compatibility
         self.entryPoint = entryPoint
+        self.ui = ui
         self.distribution = distribution
         self.repositoryURL = repositoryURL
         self.icon = icon

@@ -1,6 +1,6 @@
 # Plugin Manifest Specification
 
-Schema version 1 describes a PluginDeck plugin package. A package contains `plugin.json`, its executable entry point, and optional declarative UI resources.
+Schema version 1 describes a PluginDeck plugin package. A package contains `plugin.json`, its executable entry point, and an optional plugin-owned web interface.
 
 ## Example
 
@@ -46,7 +46,11 @@ Schema version 1 describes a PluginDeck plugin package. A package contains `plug
     "icon": "stethoscope",
     "method": "environment.inspect",
     "requiresConfirmation": false
-  }]
+  }],
+  "ui": {
+    "entryPoint": "ui/index.html",
+    "bridgeVersion": 1
+  }
 }
 ```
 
@@ -58,6 +62,7 @@ Schema version 1 describes a PluginDeck plugin package. A package contains `plug
 - `architectures` contains `arm64`, `x86_64`, or both.
 - `entryPoint.executable` must be a relative path inside the package.
 - `actions` declares the commands rendered by the host. Version 1 external plugins must declare at least one action.
+- `ui.entryPoint` optionally points to a plugin-owned HTML interface. Its forms, tables and interaction logic belong to the plugin rather than the host.
 
 ## Permissions
 
@@ -73,7 +78,17 @@ Published packages use HTTPS URLs and must include a SHA-256 digest. Marketplace
 
 For each action, PluginDeck starts a fresh plugin process, writes one JSON-RPC 2.0 request followed by a newline to standard input, and reads one response from standard output. Diagnostic logs belong on standard error.
 
-Request parameters contain `pluginID`, `actionID`, and the plugin-owned `dataDirectory`. The response result has `title`, `message`, and optional `detail` strings. Processes have a 60 second timeout.
+Request parameters contain `pluginID`, `actionID`, the plugin-owned `dataDirectory`, and a plugin-defined `payload` string dictionary. The response result has `title`, `message`, and optional `detail` strings. Processes have a 60 second timeout.
+
+## Plugin-owned interface
+
+When `ui` is present, PluginDeck loads that local page inside the plugin workspace and injects a single bridge:
+
+```javascript
+const result = await window.PluginDeck.invoke("terminate", { port: "8080" });
+```
+
+The page owns its controls and rendering. The host maps the action ID to the manifest, enforces confirmation for actions marked `requiresConfirmation`, starts the backend process, records the task, and resolves the promise with the action result. The page cannot directly execute shell commands.
 
 See `examples/hello-plugin` for an executable reference package. In Developer Center, choose “Import local plugin” and select that directory.
 

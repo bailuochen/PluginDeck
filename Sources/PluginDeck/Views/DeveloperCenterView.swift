@@ -31,6 +31,7 @@ struct DeveloperCenterView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("插件基础约定").font(.headline)
                     requirement("plugin.json", "声明身份、兼容范围、入口、权限与发布信息")
+                    requirement("自有页面", "插件可携带 HTML、CSS 和 JavaScript 工作区界面")
                     requirement("JSON-RPC 2.0", "插件在独立进程中与宿主交换结构化消息")
                     requirement("SHA-256", "发布包必须提供固定下载地址与完整性校验值")
                     requirement("最小权限", "仅申请完成具体功能所需的命令、目录和网络域名")

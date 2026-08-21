@@ -15,20 +15,11 @@ struct ExternalPluginWorkspaceView: View {
         VStack(spacing: 0) {
             header
             Divider()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 22) {
-                    securityNotice
-                    actionsSection
-                    if let result {
-                        resultSection(result)
-                    }
-                    if let errorMessage {
-                        errorSection(errorMessage)
-                    }
-                }
-                .padding(24)
-                .frame(maxWidth: 900, alignment: .leading)
-            }
+            securityNotice
+                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
+            Divider()
+            workspace
         }
         .confirmationDialog(
             pendingAction?.title ?? "确认执行",
@@ -45,6 +36,27 @@ struct ExternalPluginWorkspaceView: View {
             Button("取消", role: .cancel) { pendingAction = nil }
         } message: {
             Text(pendingAction?.description ?? "")
+        }
+    }
+
+    @ViewBuilder
+    private var workspace: some View {
+        if plugin.manifest.ui != nil {
+            ExternalPluginWebView(plugin: plugin, registry: registry)
+        } else {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    actionsSection
+                    if let result {
+                        resultSection(result)
+                    }
+                    if let errorMessage {
+                        errorSection(errorMessage)
+                    }
+                }
+                .padding(24)
+                .frame(maxWidth: 900, alignment: .leading)
+            }
         }
     }
 

@@ -18,6 +18,29 @@ import Testing
     }
 }
 
+@Test func rejectsUnsafePluginPage() throws {
+    let manifest = makeManifest(ui: .init(entryPoint: "../ui.html"))
+
+    #expect(throws: PluginValidationError.unsafeUserInterface) {
+        try PluginManifestValidator.validate(manifest, externalImport: true)
+    }
+}
+
+@Test func actionParametersIncludePluginPayload() throws {
+    let parameters = PluginActionParameters(
+        pluginID: "dev.example.external",
+        actionID: "terminate",
+        dataDirectory: "/tmp/data",
+        payload: ["port": "8080"]
+    )
+    let object = try #require(
+        JSONSerialization.jsonObject(with: JSONEncoder().encode(parameters)) as? [String: Any]
+    )
+    let payload = try #require(object["payload"] as? [String: String])
+
+    #expect(payload["port"] == "8080")
+}
+
 @Test func importsAndRunsExamplePlugin() async throws {
     let temporaryRoot = FileManager.default.temporaryDirectory
         .appendingPathComponent("PluginDeckExternalTests-\(UUID().uuidString)", isDirectory: true)
@@ -48,7 +71,8 @@ import Testing
 
 private func makeManifest(
     trustLevel: PluginManifest.TrustLevel = .community,
-    entryPoint: PluginManifest.EntryPoint = .init(executable: "bin/tool")
+    entryPoint: PluginManifest.EntryPoint = .init(executable: "bin/tool"),
+    ui: PluginManifest.UserInterface? = nil
 ) -> PluginManifest {
     PluginManifest(
         id: "dev.example.external",
@@ -66,6 +90,7 @@ private func makeManifest(
             architectures: [currentArchitecture]
         ),
         entryPoint: entryPoint,
+        ui: ui,
         icon: "wrench",
         actions: [
             .init(

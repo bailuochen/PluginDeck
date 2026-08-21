@@ -16,6 +16,19 @@ public struct PluginActionParameters: Codable, Sendable {
     public let pluginID: String
     public let actionID: String
     public let dataDirectory: String
+    public let payload: [String: String]
+
+    public init(
+        pluginID: String,
+        actionID: String,
+        dataDirectory: String,
+        payload: [String: String] = [:]
+    ) {
+        self.pluginID = pluginID
+        self.actionID = actionID
+        self.dataDirectory = dataDirectory
+        self.payload = payload
+    }
 }
 
 public enum ExternalPluginError: LocalizedError {
@@ -43,7 +56,8 @@ public actor ExternalPluginRunner {
 
     public func run(
         plugin: InstalledPlugin,
-        action: PluginManifest.Action
+        action: PluginManifest.Action,
+        payload: [String: String] = [:]
     ) async throws -> PluginActionResult {
         guard let packagePath = plugin.packagePath,
               let entryPoint = plugin.manifest.entryPoint,
@@ -70,7 +84,8 @@ public actor ExternalPluginRunner {
             params: PluginActionParameters(
                 pluginID: plugin.id,
                 actionID: action.id,
-                dataDirectory: dataDirectory.path
+                dataDirectory: dataDirectory.path,
+                payload: payload
             )
         )
         let requestData = try JSONEncoder().encode(request) + Data([0x0A])
