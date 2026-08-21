@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-08-21T08:16:58Z",
+  "updatedAt": "2026-08-21T08:38:44Z",
   "plugins": [
     {
       "schemaVersion": 1,
@@ -8,7 +8,7 @@
       "name": "NVM",
       "summary": "可视化管理 Node.js 版本、默认环境与项目运行时。",
       "description": "使用本机已有的 NVM 管理 Node.js 版本，查看完整在线发布信息，检测项目版本文件并检查 Shell 环境。",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "category": "runtimes",
       "author": {
         "name": "LuoChen",
@@ -32,8 +32,8 @@
         "bridgeVersion": 1
       },
       "distribution": {
-        "downloadURL": "https://api.github.com/repos/bailuochen/PluginDeck-NVM/releases/assets/523445672",
-        "sha256": "0c14fe2459e8afb3d23b7e9f71de2d4b178a8c748413404f53e8b4fbca6cda21"
+        "downloadURL": "https://api.github.com/repos/bailuochen/PluginDeck-NVM/releases/assets/523470318",
+        "sha256": "7628db77cc4784da840345f0ebf211cbf35f5562b38783b07f96bb7208901bd3"
       },
       "repositoryURL": "https://github.com/bailuochen/PluginDeck-NVM",
       "icon": "point.3.connected.trianglepath.dotted",
