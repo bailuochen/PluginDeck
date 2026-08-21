@@ -200,6 +200,7 @@ public struct PluginTask: Codable, Hashable, Identifiable, Sendable {
         case running
         case completed
         case failed
+        case cancelled
     }
 
     public let id: UUID

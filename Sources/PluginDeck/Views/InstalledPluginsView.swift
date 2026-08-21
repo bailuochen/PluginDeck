@@ -1,5 +1,6 @@
 import SwiftUI
 import PluginDeckCore
+import PluginDeckNVM
 
 struct InstalledPluginsView: View {
     @EnvironmentObject private var model: AppModel
@@ -60,8 +61,7 @@ struct InstalledPluginsView: View {
                         if !plugin.isEnabled {
                             disabledView(plugin)
                         } else if plugin.id == "dev.plugindeck.nvm" {
-                            NVMWorkspaceView()
-                                .environmentObject(model)
+                            NVMPluginWorkspaceView(registry: model.registry)
                         } else {
                             genericWorkspace(plugin)
                         }

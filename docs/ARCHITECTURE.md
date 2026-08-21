@@ -38,4 +38,4 @@ Static permissions are displayed before installation. Dynamic resources, such as
 
 ## Migration note
 
-The first NVM workspace is compiled into the host so the product remains useful while the protocol is being implemented. It is intentionally isolated behind an adapter API and will become the first standalone reference plugin.
+The complete NVM plugin is currently compiled as a separate Swift module and mounted by the host so the product remains useful while the process protocol is being implemented. Its models, service, parsers, views and tests are isolated from the host application target. It will become the first standalone reference plugin package.

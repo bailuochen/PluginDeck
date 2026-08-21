@@ -117,8 +117,18 @@ public final class PluginRegistry: ObservableObject {
     }
 
     public func finishTask(_ id: UUID, succeeded: Bool, message: String) {
+        finishTask(id, status: succeeded ? .completed : .failed, message: message)
+    }
+
+    public func updateTask(_ id: UUID, message: String) {
         guard let index = tasks.firstIndex(where: { $0.id == id }) else { return }
-        tasks[index].status = succeeded ? .completed : .failed
+        tasks[index].message = message
+        persist()
+    }
+
+    public func finishTask(_ id: UUID, status: PluginTask.Status, message: String) {
+        guard let index = tasks.firstIndex(where: { $0.id == id }) else { return }
+        tasks[index].status = status
         tasks[index].finishedAt = .now
         tasks[index].message = message
         persist()

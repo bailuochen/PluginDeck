@@ -66,6 +66,8 @@ struct TaskCenterView: View {
             Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
         case .failed:
             Image(systemName: "xmark.circle.fill").foregroundStyle(.red)
+        case .cancelled:
+            Image(systemName: "stop.circle.fill").foregroundStyle(.orange)
         }
     }
 
@@ -74,6 +76,7 @@ struct TaskCenterView: View {
         case .running: "进行中"
         case .completed: "已完成"
         case .failed: "失败"
+        case .cancelled: "已取消"
         }
     }
 

@@ -2,7 +2,7 @@
 
 PluginDeck 是一个开源的 macOS 开发者插件工作台。它把 NVM、Homebrew、pyenv、Git 等命令行开发工具组织成可发现、可授权、可安装、可追踪的图形化插件。
 
-> 当前状态：早期开发版。平台骨架和官方 NVM 内置适配器已经可运行，第三方插件安装协议仍在演进。
+> 当前状态：早期开发版。平台骨架和完整的官方 NVM 插件模块已经可运行，第三方插件安装协议仍在演进。
 
 ![PluginDeck 插件市场](Assets/marketplace.png)
 
@@ -19,8 +19,12 @@ PluginDeck 是一个开源的 macOS 开发者插件工作台。它把 NVM、Home
 - 版本化 `plugin.json` 清单模型
 - 插件来源、信任级别、权限、网络域名和兼容性展示
 - 安装、启用、停用、卸载和本地状态持久化
-- 官方 NVM 工作区：环境检测、已安装版本、`nvm install`、`nvm uninstall`、默认版本
-- 统一任务记录
+- 官方 NVM 工作区：已安装版本、在线版本、项目与环境四个完整区域
+- Node.js 发布日期、LTS、npm、V8、安全更新和 Mac 架构元数据
+- `nvm install` 安装进度、实时日志、取消、查询重试和下载停滞恢复
+- `.nvmrc` / `.node-version` / `package.json` 检测及项目一键就绪
+- NVM 路径、Shell、Terminal 权限健康检查及自定义 NVM 目录
+- 与插件任务同步的统一任务记录
 - JSON-RPC 2.0 进程协议基础类型
 
 ## 本地运行
@@ -40,10 +44,10 @@ swift test
 构建可直接安装的 DMG：
 
 ```bash
-APP_VERSION=0.1.0 ./scripts/build-dmg.sh
+APP_VERSION=0.2.0 ./scripts/build-dmg.sh
 ```
 
-生成文件位于 `dist/PluginDeck-0.1.0.dmg`。项目通过 GitHub Releases 分发，不要求通过 Mac App Store 发布。未使用 Apple Developer ID 签名的构建首次打开时可能需要在“系统设置 -> 隐私与安全性”中确认。
+生成文件位于 `dist/PluginDeck-0.2.0.dmg`。项目通过 GitHub Releases 分发，不要求通过 Mac App Store 发布。未使用 Apple Developer ID 签名的构建首次打开时可能需要在“系统设置 -> 隐私与安全性”中确认。
 
 ## 插件架构
 
@@ -59,7 +63,7 @@ APP_VERSION=0.1.0 ./scripts/build-dmg.sh
 
 ## 路线图
 
-- 将 NVM 内置适配器迁移为首个独立进程插件
+- 将 NVM 插件模块迁移为首个独立进程分发包
 - GitHub 托管的 Marketplace Catalog
 - ZIP 下载、校验、原子安装和失败恢复
 - 插件更新、版本固定与回滚
