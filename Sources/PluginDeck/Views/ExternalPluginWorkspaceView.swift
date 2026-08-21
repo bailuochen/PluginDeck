@@ -43,6 +43,7 @@ struct ExternalPluginWorkspaceView: View {
     private var workspace: some View {
         if plugin.manifest.ui != nil {
             ExternalPluginWebView(plugin: plugin, registry: registry)
+                .id("\(plugin.id)-\(plugin.manifest.version)-\(plugin.packagePath ?? "")")
         } else {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {

@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 
 public struct PluginActionResult: Codable, Hashable, Sendable {
@@ -93,6 +94,8 @@ public actor ExternalPluginRunner {
         let input = Pipe()
         let output = Pipe()
         let errorOutput = Pipe()
+        let outputCollector = ProcessDataCollector()
+        let errorCollector = ProcessDataCollector()
         process.executableURL = executable
         process.currentDirectoryURL = packageURL
         process.arguments = []
@@ -108,6 +111,19 @@ public actor ExternalPluginRunner {
         process.standardOutput = output
         process.standardError = errorOutput
 
+        output.fileHandleForReading.readabilityHandler = { handle in
+            let data = handle.availableData
+            if !data.isEmpty { outputCollector.append(data) }
+        }
+        errorOutput.fileHandleForReading.readabilityHandler = { handle in
+            let data = handle.availableData
+            if !data.isEmpty { errorCollector.append(data) }
+        }
+        defer {
+            output.fileHandleForReading.readabilityHandler = nil
+            errorOutput.fileHandleForReading.readabilityHandler = nil
+        }
+
         let timeout = TimeoutState()
         let timeoutSeconds = action.timeoutSeconds ?? 60
         let processBox = ProcessBox(process)
@@ -116,7 +132,7 @@ public actor ExternalPluginRunner {
         timer.setEventHandler {
             guard processBox.process.isRunning else { return }
             timeout.markTimedOut()
-            processBox.process.terminate()
+            Self.terminateProcessTree(rootProcessID: processBox.process.processIdentifier)
         }
         timer.resume()
         defer { timer.cancel() }
@@ -133,8 +149,12 @@ public actor ExternalPluginRunner {
                 continuation.resume(throwing: ExternalPluginError.launchFailed(error.localizedDescription))
             }
         }
-        let responseData = output.fileHandleForReading.readDataToEndOfFile()
-        let errorData = errorOutput.fileHandleForReading.readDataToEndOfFile()
+        output.fileHandleForReading.readabilityHandler = nil
+        errorOutput.fileHandleForReading.readabilityHandler = nil
+        outputCollector.append(output.fileHandleForReading.readDataToEndOfFile())
+        errorCollector.append(errorOutput.fileHandleForReading.readDataToEndOfFile())
+        let responseData = outputCollector.data
+        let errorData = errorCollector.data
         if timeout.didTimeOut { throw ExternalPluginError.timedOut(timeoutSeconds) }
 
         let stderr = String(decoding: errorData, as: UTF8.self)
@@ -160,6 +180,61 @@ public actor ExternalPluginRunner {
             let raw = String(decoding: responseData, as: UTF8.self)
             throw ExternalPluginError.invalidResponse(raw.isEmpty ? error.localizedDescription : raw)
         }
+    }
+
+    private nonisolated static func terminateProcessTree(rootProcessID: Int32) {
+        let processIDs = descendantProcessIDs(of: rootProcessID) + [rootProcessID]
+        for processID in processIDs {
+            Darwin.kill(processID, SIGTERM)
+        }
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.3) {
+            for processID in processIDs where Darwin.kill(processID, 0) == 0 {
+                Darwin.kill(processID, SIGKILL)
+            }
+        }
+    }
+
+    private nonisolated static func descendantProcessIDs(of processID: Int32) -> [Int32] {
+        childProcessIDs(of: processID).flatMap { childID in
+            descendantProcessIDs(of: childID) + [childID]
+        }
+    }
+
+    private nonisolated static func childProcessIDs(of processID: Int32) -> [Int32] {
+        let process = Process()
+        let output = Pipe()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/pgrep")
+        process.arguments = ["-P", String(processID)]
+        process.standardOutput = output
+        process.standardError = FileHandle.nullDevice
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            return []
+        }
+        return String(decoding: output.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+            .split(whereSeparator: \.isWhitespace)
+            .compactMap { Int32($0) }
+    }
+}
+
+private final class ProcessDataCollector: @unchecked Sendable {
+    private let lock = NSLock()
+    private var storage = Data()
+
+    var data: Data {
+        lock.lock()
+        defer { lock.unlock() }
+        return storage
+    }
+
+    func append(_ data: Data) {
+        guard !data.isEmpty else { return }
+        lock.lock()
+        storage.append(data)
+        lock.unlock()
     }
 }
 

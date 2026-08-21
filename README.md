@@ -48,10 +48,10 @@ swift test
 构建可直接安装的 DMG：
 
 ```bash
-APP_VERSION=0.5.0 ./scripts/build-dmg.sh
+APP_VERSION=0.5.1 ./scripts/build-dmg.sh
 ```
 
-生成文件位于 `dist/PluginDeck-0.5.0.dmg`。项目通过 GitHub Releases 分发，不要求通过 Mac App Store 发布。未使用 Apple Developer ID 签名的构建首次打开时可能需要在“系统设置 -> 隐私与安全性”中确认。
+生成文件位于 `dist/PluginDeck-0.5.1.dmg`。项目通过 GitHub Releases 分发，不要求通过 Mac App Store 发布。未使用 Apple Developer ID 签名的构建首次打开时可能需要在“系统设置 -> 隐私与安全性”中确认。
 
 ## 插件架构
 

@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 import Testing
 @testable import PluginDeckCore
@@ -100,10 +101,96 @@ import Testing
     #expect(FileManager.default.fileExists(atPath: artifact.packageDirectory.path))
 }
 
+@Test func runnerDrainsLargePluginResponsesWithoutDeadlocking() async throws {
+    let temporaryRoot = FileManager.default.temporaryDirectory
+        .appendingPathComponent("PluginDeckLargeOutputTests-\(UUID().uuidString)", isDirectory: true)
+    defer { try? FileManager.default.removeItem(at: temporaryRoot) }
+    let packageRoot = temporaryRoot
+        .appendingPathComponent("Plugins/dev.example.external/1.0.0", isDirectory: true)
+    let executable = packageRoot.appendingPathComponent("bin/tool")
+    try FileManager.default.createDirectory(
+        at: executable.deletingLastPathComponent(),
+        withIntermediateDirectories: true
+    )
+    let script = #"""
+    #!/bin/zsh
+    /bin/cat >/dev/null
+    detail=$(/usr/bin/head -c 200000 /dev/zero | /usr/bin/tr '\0' x)
+    /usr/bin/printf '{"jsonrpc":"2.0","id":"00000000-0000-0000-0000-000000000000","result":{"message":"large","detail":"%s"}}' "$detail"
+    """#
+    try script.write(to: executable, atomically: true, encoding: .utf8)
+    try FileManager.default.setAttributes(
+        [.posixPermissions: 0o755],
+        ofItemAtPath: executable.path
+    )
+    let manifest = makeManifest()
+    try JSONEncoder().encode(manifest).write(
+        to: packageRoot.appendingPathComponent("plugin.json")
+    )
+    let installed = InstalledPlugin(
+        manifest: manifest,
+        packagePath: packageRoot.path,
+        source: .local
+    )
+    let action = try #require(manifest.actions?.first)
+
+    let result = try await ExternalPluginRunner().run(plugin: installed, action: action)
+
+    #expect(result.message == "large")
+    #expect(result.detail?.count == 200_000)
+}
+
+@Test func runnerTimeoutTerminatesDescendantProcesses() async throws {
+    let temporaryRoot = FileManager.default.temporaryDirectory
+        .appendingPathComponent("PluginDeckTimeoutTests-\(UUID().uuidString)", isDirectory: true)
+    defer { try? FileManager.default.removeItem(at: temporaryRoot) }
+    let packageRoot = temporaryRoot
+        .appendingPathComponent("Plugins/dev.example.external/1.0.0", isDirectory: true)
+    let executable = packageRoot.appendingPathComponent("bin/tool")
+    let childPIDFile = packageRoot.appendingPathComponent("child.pid")
+    try FileManager.default.createDirectory(
+        at: executable.deletingLastPathComponent(),
+        withIntermediateDirectories: true
+    )
+    let script = """
+    #!/bin/zsh
+    /bin/cat >/dev/null
+    /bin/sleep 30 &
+    child_pid=$!
+    echo "$child_pid" > "\(childPIDFile.path)"
+    wait "$child_pid"
+    """
+    try script.write(to: executable, atomically: true, encoding: .utf8)
+    try FileManager.default.setAttributes(
+        [.posixPermissions: 0o755],
+        ofItemAtPath: executable.path
+    )
+    let manifest = makeManifest(timeoutSeconds: 5)
+    try JSONEncoder().encode(manifest).write(
+        to: packageRoot.appendingPathComponent("plugin.json")
+    )
+    let installed = InstalledPlugin(
+        manifest: manifest,
+        packagePath: packageRoot.path,
+        source: .local
+    )
+    let action = try #require(manifest.actions?.first)
+
+    await #expect(throws: ExternalPluginError.self) {
+        try await ExternalPluginRunner().run(plugin: installed, action: action)
+    }
+    let childProcessID = try #require(
+        Int32(String(contentsOf: childPIDFile, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines))
+    )
+    try await Task.sleep(for: .milliseconds(500))
+    #expect(Darwin.kill(childProcessID, 0) == -1)
+}
+
 private func makeManifest(
     trustLevel: PluginManifest.TrustLevel = .community,
     entryPoint: PluginManifest.EntryPoint = .init(executable: "bin/tool"),
-    ui: PluginManifest.UserInterface? = nil
+    ui: PluginManifest.UserInterface? = nil,
+    timeoutSeconds: Int? = nil
 ) -> PluginManifest {
     PluginManifest(
         id: "dev.example.external",
@@ -129,7 +216,8 @@ private func makeManifest(
                 title: "Run",
                 description: "Run action",
                 icon: "play",
-                method: "tool.run"
+                method: "tool.run",
+                timeoutSeconds: timeoutSeconds
             )
         ]
     )

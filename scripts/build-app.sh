@@ -4,7 +4,7 @@ set -euo pipefail
 
 project_dir="${0:A:h:h}"
 app_dir="$project_dir/dist/PluginDeck.app"
-version="${APP_VERSION:-0.5.0}"
+version="${APP_VERSION:-0.5.1}"
 universal="${UNIVERSAL:-0}"
 
 if [[ ! "$version" =~ '^[0-9]+\.[0-9]+\.[0-9]+$' ]]; then

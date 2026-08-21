@@ -43,7 +43,7 @@ public enum PluginValidationError: LocalizedError, Equatable {
 }
 
 public enum PluginManifestValidator {
-    public static let hostVersion = "0.5.0"
+    public static let hostVersion = "0.5.1"
 
     public static func decodeManifest(in directory: URL) throws -> PluginManifest {
         let url = directory.appendingPathComponent("plugin.json")

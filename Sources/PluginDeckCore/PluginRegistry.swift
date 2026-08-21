@@ -37,6 +37,15 @@ public final class PluginRegistry: ObservableObject {
         }
         installed = state.installed
         tasks = state.tasks
+        let interruptedAt = Date.now
+        var recoveredInterruptedTask = false
+        for index in tasks.indices where tasks[index].status == .running {
+            tasks[index].status = .failed
+            tasks[index].finishedAt = interruptedAt
+            tasks[index].message = "应用退出，任务已中断"
+            recoveredInterruptedTask = true
+        }
+        if recoveredInterruptedTask { persist() }
     }
 
     public func isInstalled(_ pluginID: String) -> Bool {
