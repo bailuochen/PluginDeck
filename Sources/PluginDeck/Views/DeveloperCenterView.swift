@@ -1,8 +1,6 @@
 import SwiftUI
 
 struct DeveloperCenterView: View {
-    @EnvironmentObject private var model: AppModel
-    @State private var importMode: PluginImportMode?
     private let repositoryURL = URL(string: "https://github.com/bailuochen/PluginDeck")!
 
     var body: some View {
@@ -12,21 +10,6 @@ struct DeveloperCenterView: View {
                     title: "开发者中心",
                     subtitle: "为 PluginDeck 构建权限透明、可独立运行的开发工具插件。"
                 )
-
-                HStack(spacing: 10) {
-                    Button {
-                        importMode = .local
-                    } label: {
-                        Label("导入本地插件", systemImage: "folder.badge.plus")
-                    }
-                    .buttonStyle(.borderedProminent)
-
-                    Button {
-                        importMode = .git
-                    } label: {
-                        Label("从 Git 仓库导入", systemImage: "arrow.triangle.branch")
-                    }
-                }
 
                 VStack(alignment: .leading, spacing: 12) {
                     Text("插件基础约定").font(.headline)
@@ -54,16 +37,6 @@ struct DeveloperCenterView: View {
             }
             .padding(28)
             .frame(maxWidth: 900, alignment: .leading)
-        }
-        .sheet(item: $importMode) { mode in
-            PluginImportView(
-                mode: mode,
-                registry: model.registry,
-                installer: model.pluginInstaller
-            ) { artifact in
-                model.destination = .installed
-                model.selectedPlugin = artifact.manifest
-            }
         }
     }
 

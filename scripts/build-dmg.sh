@@ -3,7 +3,7 @@
 set -euo pipefail
 
 project_dir="${0:A:h:h}"
-version="${APP_VERSION:-0.4.0}"
+version="${APP_VERSION:-0.5.0}"
 dmg_path="$project_dir/dist/PluginDeck-$version.dmg"
 stage_dir=$(mktemp -d)
 

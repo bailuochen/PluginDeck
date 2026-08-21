@@ -43,7 +43,7 @@ public enum PluginValidationError: LocalizedError, Equatable {
 }
 
 public enum PluginManifestValidator {
-    public static let hostVersion = "0.4.0"
+    public static let hostVersion = "0.5.0"
 
     public static func decodeManifest(in directory: URL) throws -> PluginManifest {
         let url = directory.appendingPathComponent("plugin.json")
@@ -111,7 +111,9 @@ public enum PluginManifestValidator {
                     of: #"^[a-zA-Z0-9][a-zA-Z0-9._-]*$"#,
                     options: .regularExpression
                 ) != nil,
-                !action.title.isEmpty
+                !action.title.isEmpty,
+                action.timeoutSeconds == nil
+                    || (5...1_800).contains(action.timeoutSeconds!)
                 else {
                     throw PluginValidationError.invalidAction(action.id)
                 }
@@ -185,7 +187,7 @@ public enum PluginManifestValidator {
         value.range(of: #"^\d+(?:\.\d+){1,2}$"#, options: .regularExpression) != nil
     }
 
-    private static func compareVersions(_ lhs: String, _ rhs: String) -> Int {
+    public static func compareVersions(_ lhs: String, _ rhs: String) -> Int {
         let left = lhs.split(separator: ".").map { Int($0.prefix { $0.isNumber }) ?? 0 }
         let right = rhs.split(separator: ".").map { Int($0.prefix { $0.isNumber }) ?? 0 }
         for index in 0..<max(left.count, right.count) {

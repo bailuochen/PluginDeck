@@ -41,6 +41,37 @@ import Testing
     #expect(payload["port"] == "8080")
 }
 
+@Test func marketplaceManifestMatchesPackageWithoutDistribution() {
+    let packaged = makeManifest()
+    let catalog = PluginManifest(
+        id: packaged.id,
+        name: packaged.name,
+        summary: packaged.summary,
+        description: packaged.description,
+        version: packaged.version,
+        category: packaged.category,
+        author: packaged.author,
+        trustLevel: packaged.trustLevel,
+        permissions: packaged.permissions,
+        compatibility: packaged.compatibility,
+        entryPoint: packaged.entryPoint,
+        distribution: .init(
+            downloadURL: URL(string: "https://example.com/plugin.zip"),
+            sha256: String(repeating: "a", count: 64)
+        ),
+        icon: packaged.icon,
+        actions: packaged.actions ?? []
+    )
+
+    #expect(packaged.describesSamePackage(as: catalog))
+}
+
+@Test func packagedMarketplaceManifestDoesNotRequireSelfReferentialDistribution() throws {
+    let packaged = makeManifest()
+
+    try PluginManifestValidator.validate(packaged, externalImport: true)
+}
+
 @Test func importsAndRunsExamplePlugin() async throws {
     let temporaryRoot = FileManager.default.temporaryDirectory
         .appendingPathComponent("PluginDeckExternalTests-\(UUID().uuidString)", isDirectory: true)

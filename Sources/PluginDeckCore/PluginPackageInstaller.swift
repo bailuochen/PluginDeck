@@ -58,11 +58,17 @@ public actor PluginPackageInstaller {
     private let pluginsDirectory: URL
     private let stagingDirectory: URL
     private let fileManager = FileManager.default
+    private let urlSession: URLSession
 
     public init(pluginsDirectory: URL) {
         self.pluginsDirectory = pluginsDirectory
         self.stagingDirectory = pluginsDirectory.deletingLastPathComponent()
             .appendingPathComponent("Staging", isDirectory: true)
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.timeoutIntervalForRequest = 45
+        configuration.timeoutIntervalForResource = 180
+        configuration.httpMaximumConnectionsPerHost = 2
+        self.urlSession = URLSession(configuration: configuration)
     }
 
     public func inspectLocalDirectory(_ directory: URL) throws -> PluginImportCandidate {
@@ -119,10 +125,7 @@ public actor PluginPackageInstaller {
         guard let downloadURL = manifest.distribution.downloadURL else {
             throw PluginInstallerError.downloadFailed
         }
-        let (data, response) = try await URLSession.shared.data(from: downloadURL)
-        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-            throw PluginInstallerError.downloadFailed
-        }
+        let data = try await downloadPackage(from: downloadURL)
         guard data.count <= 50 * 1024 * 1024 else {
             throw PluginInstallerError.packageTooLarge
         }
@@ -149,14 +152,13 @@ public actor PluginPackageInstaller {
             try validateTree(work)
             let root = try locatePackageRoot(in: work)
             let packagedManifest = try PluginManifestValidator.decodeManifest(in: root)
-            guard packagedManifest == manifest else {
+            guard packagedManifest.describesSamePackage(as: manifest) else {
                 throw PluginInstallerError.manifestMismatch
             }
             try PluginManifestValidator.validate(
                 packagedManifest,
                 packageDirectory: root,
-                externalImport: true,
-                marketplace: true
+                externalImport: true
             )
             return PluginImportCandidate(
                 manifest: manifest,
@@ -225,6 +227,36 @@ public actor PluginPackageInstaller {
 
     private func prepareStagingDirectory() throws {
         try fileManager.createDirectory(at: stagingDirectory, withIntermediateDirectories: true)
+    }
+
+    private func downloadPackage(from url: URL) async throws -> Data {
+        for attempt in 1...3 {
+            do {
+                var request = URLRequest(
+                    url: url,
+                    cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
+                    timeoutInterval: 45
+                )
+                request.setValue("application/octet-stream", forHTTPHeaderField: "Accept")
+                request.setValue("PluginDeck/0.5.0", forHTTPHeaderField: "User-Agent")
+                if url.host == "api.github.com" {
+                    request.setValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")
+                }
+                let (data, response) = try await urlSession.data(for: request)
+                if let http = response as? HTTPURLResponse,
+                   (200..<300).contains(http.statusCode) {
+                    return data
+                }
+            } catch is CancellationError {
+                throw CancellationError()
+            } catch {
+                if attempt == 3 { throw PluginInstallerError.downloadFailed }
+            }
+            if attempt < 3 {
+                try await Task.sleep(for: .seconds(attempt))
+            }
+        }
+        throw PluginInstallerError.downloadFailed
     }
 
     private func validateTree(_ directory: URL) throws {

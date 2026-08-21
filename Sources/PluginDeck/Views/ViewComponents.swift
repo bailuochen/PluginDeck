@@ -29,13 +29,13 @@ struct PluginIcon: View {
     }
 }
 
-struct TrustBadge: View {
-    let level: PluginManifest.TrustLevel
+struct AuthorLabel: View {
+    let author: PluginManifest.Author
 
     var body: some View {
-        Label(level.displayName, systemImage: level == .official ? "checkmark.seal.fill" : "person.2")
+        Label(author.name, systemImage: "person.crop.circle")
             .font(.caption)
-            .foregroundStyle(level == .official ? Color.green : Color.secondary)
+            .foregroundStyle(.secondary)
     }
 }
 

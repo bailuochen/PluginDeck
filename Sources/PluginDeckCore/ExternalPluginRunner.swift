@@ -35,7 +35,7 @@ public enum ExternalPluginError: LocalizedError {
     case packageMissing
     case actionMissing
     case launchFailed(String)
-    case timedOut
+    case timedOut(Int)
     case invalidResponse(String)
     case remote(String)
 
@@ -44,7 +44,7 @@ public enum ExternalPluginError: LocalizedError {
         case .packageMissing: "插件包或可执行入口不存在"
         case .actionMissing: "插件动作不存在"
         case .launchFailed(let message): "插件无法启动：\(message)"
-        case .timedOut: "插件运行超过 60 秒，已终止"
+        case .timedOut(let seconds): "插件运行超过 \(seconds) 秒，已终止"
         case .invalidResponse(let message): "插件返回了无效 JSON-RPC 响应：\(message)"
         case .remote(let message): "插件执行失败：\(message)"
         }
@@ -109,9 +109,10 @@ public actor ExternalPluginRunner {
         process.standardError = errorOutput
 
         let timeout = TimeoutState()
+        let timeoutSeconds = action.timeoutSeconds ?? 60
         let processBox = ProcessBox(process)
         let timer = DispatchSource.makeTimerSource(queue: .global(qos: .utility))
-        timer.schedule(deadline: .now() + 60)
+        timer.schedule(deadline: .now() + .seconds(timeoutSeconds))
         timer.setEventHandler {
             guard processBox.process.isRunning else { return }
             timeout.markTimedOut()
@@ -134,7 +135,7 @@ public actor ExternalPluginRunner {
         }
         let responseData = output.fileHandleForReading.readDataToEndOfFile()
         let errorData = errorOutput.fileHandleForReading.readDataToEndOfFile()
-        if timeout.didTimeOut { throw ExternalPluginError.timedOut }
+        if timeout.didTimeOut { throw ExternalPluginError.timedOut(timeoutSeconds) }
 
         let stderr = String(decoding: errorData, as: UTF8.self)
             .trimmingCharacters(in: .whitespacesAndNewlines)

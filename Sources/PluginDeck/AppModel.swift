@@ -83,10 +83,6 @@ final class AppModel: ObservableObject {
         installingPluginID = plugin.id
         defer { installingPluginID = nil }
 
-        if plugin.id == "dev.plugindeck.nvm" {
-            registry.install(plugin, source: .builtIn)
-            return
-        }
         let candidate = try await pluginInstaller.prepareMarketplacePlugin(plugin)
         let artifact = try await pluginInstaller.install(candidate)
         registry.install(
@@ -94,6 +90,19 @@ final class AppModel: ObservableObject {
             packagePath: artifact.packageDirectory.path,
             source: artifact.source
         )
+    }
+
+    func updateAvailable(for plugin: PluginManifest) -> Bool {
+        guard let installed = registry.installed.first(where: { $0.id == plugin.id }) else {
+            return false
+        }
+        if installed.packagePath == nil, plugin.entryPoint?.executable.hasPrefix("builtin:") != true {
+            return true
+        }
+        return PluginManifestValidator.compareVersions(
+            plugin.version,
+            installed.manifest.version
+        ) > 0
     }
 
     func refreshMarketplaceCatalog() async {
@@ -109,12 +118,9 @@ final class AppModel: ObservableObject {
                     externalImport: true,
                     marketplace: true
                 )
-                merged[plugin.id] = plugin
+                merged.removeValue(forKey: plugin.id)
             }
-            catalog = merged.values.sorted {
-                if $0.featured != $1.featured { return $0.featured && !$1.featured }
-                return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
-            }
+            catalog = stableFeaturedOrder(remote.plugins + catalog.compactMap { merged[$0.id] })
             marketplaceStatus = "已同步远程目录"
         } catch {
             marketplaceStatus = "使用内置目录"
@@ -129,9 +135,13 @@ final class AppModel: ObservableObject {
             return
         }
         do {
-            catalog = try PluginCatalog.decode(Data(contentsOf: url)).plugins
+            catalog = stableFeaturedOrder(try PluginCatalog.decode(Data(contentsOf: url)).plugins)
         } catch {
             catalogError = error.localizedDescription
         }
+    }
+
+    private func stableFeaturedOrder(_ plugins: [PluginManifest]) -> [PluginManifest] {
+        plugins.filter(\.featured) + plugins.filter { !$0.featured }
     }
 }

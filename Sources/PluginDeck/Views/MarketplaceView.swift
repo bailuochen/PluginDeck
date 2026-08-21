@@ -3,6 +3,8 @@ import PluginDeckCore
 
 struct MarketplaceView: View {
     @EnvironmentObject private var model: AppModel
+    @State private var importMode: PluginImportMode?
+    @State private var detailPlugin: PluginManifest?
 
     private let columns = [
         GridItem(.adaptive(minimum: 290, maximum: 380), spacing: 14, alignment: .top)
@@ -17,17 +19,35 @@ struct MarketplaceView: View {
                         subtitle: "发现经过清单校验、权限透明的开发工具插件。"
                     )
                     Spacer()
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Button {
-                            Task { await model.refreshMarketplaceCatalog() }
+                    HStack(alignment: .top, spacing: 10) {
+                        Menu {
+                            Button {
+                                importMode = .local
+                            } label: {
+                                Label("从本地目录导入", systemImage: "folder.badge.plus")
+                            }
+                            Button {
+                                importMode = .git
+                            } label: {
+                                Label("从 Git 仓库导入", systemImage: "arrow.triangle.branch")
+                            }
                         } label: {
-                            Image(systemName: "arrow.clockwise")
+                            Label("导入插件", systemImage: "square.and.arrow.down")
                         }
-                        .help("同步远程目录")
-                        if let status = model.marketplaceStatus {
-                            Text(status)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                        .fixedSize()
+
+                        VStack(alignment: .trailing, spacing: 4) {
+                            Button {
+                                Task { await model.refreshMarketplaceCatalog() }
+                            } label: {
+                                Image(systemName: "arrow.clockwise")
+                            }
+                            .help("同步远程目录")
+                            if let status = model.marketplaceStatus {
+                                Text(status)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
                 }
@@ -56,6 +76,21 @@ struct MarketplaceView: View {
             .frame(maxWidth: 1180, alignment: .leading)
         }
         .searchable(text: $model.searchText, prompt: "搜索插件或能力")
+        .sheet(item: $detailPlugin) { plugin in
+            PluginDetailView(plugin: plugin)
+                .environmentObject(model)
+                .frame(minWidth: 620, idealWidth: 680, minHeight: 560, idealHeight: 640)
+        }
+        .sheet(item: $importMode) { mode in
+            PluginImportView(
+                mode: mode,
+                registry: model.registry,
+                installer: model.pluginInstaller
+            ) { artifact in
+                model.destination = .installed
+                model.selectedPlugin = artifact.manifest
+            }
+        }
     }
 
     private var filters: some View {
@@ -80,7 +115,7 @@ struct MarketplaceView: View {
 
     private func pluginCard(_ plugin: PluginManifest) -> some View {
         Button {
-            model.show(plugin)
+            detailPlugin = plugin
         } label: {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .top, spacing: 12) {
@@ -96,7 +131,7 @@ struct MarketplaceView: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
-                        TrustBadge(level: plugin.trustLevel)
+                        AuthorLabel(author: plugin.author)
                     }
                 }
 
@@ -110,7 +145,10 @@ struct MarketplaceView: View {
                 HStack {
                     Text(plugin.category.displayName)
                     Spacer()
-                    if model.registry.isInstalled(plugin.id) {
+                    if model.updateAvailable(for: plugin) {
+                        Label("可更新", systemImage: "arrow.down.circle.fill")
+                            .foregroundStyle(Color.accentColor)
+                    } else if model.registry.isInstalled(plugin.id) {
                         Label("已安装", systemImage: "checkmark.circle.fill")
                             .foregroundStyle(.green)
                     } else if plugin.releaseStatus == .available {
@@ -123,12 +161,13 @@ struct MarketplaceView: View {
             }
             .padding(16)
             .frame(maxWidth: .infinity, minHeight: 160, alignment: .topLeading)
+            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 7))
+            .overlay {
+                RoundedRectangle(cornerRadius: 7)
+                    .stroke(Color(nsColor: .separatorColor), lineWidth: 0.5)
+            }
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 7))
-        .overlay {
-            RoundedRectangle(cornerRadius: 7)
-                .stroke(Color(nsColor: .separatorColor), lineWidth: 0.5)
-        }
     }
 }

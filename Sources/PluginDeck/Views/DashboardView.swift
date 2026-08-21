@@ -41,7 +41,7 @@ struct DashboardView: View {
         VStack(alignment: .leading, spacing: 14) {
             Label("开始使用", systemImage: "sparkles")
                 .font(.headline)
-            Text("安装官方 NVM 插件，体验从发现、授权到执行任务的完整流程。")
+            Text("安装 NVM 插件，体验从发现、授权到执行任务的完整流程。")
                 .foregroundStyle(.secondary)
             Button("浏览插件市场") {
                 model.destination = .marketplace
@@ -85,7 +85,7 @@ struct DashboardView: View {
     private var featuredSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("官方插件")
+                Text("精选插件")
                     .font(.headline)
                 Spacer()
                 Button("查看全部") { model.destination = .marketplace }
@@ -100,7 +100,7 @@ struct DashboardView: View {
                                 HStack {
                                     Text(plugin.name).fontWeight(.semibold)
                                     Spacer()
-                                    TrustBadge(level: plugin.trustLevel)
+                                    AuthorLabel(author: plugin.author)
                                 }
                                 Text(plugin.summary)
                                     .font(.subheadline)

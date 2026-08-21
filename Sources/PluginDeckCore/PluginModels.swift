@@ -8,6 +8,7 @@ public struct PluginManifest: Codable, Hashable, Identifiable, Sendable {
         public let icon: String
         public let method: String
         public let requiresConfirmation: Bool
+        public let timeoutSeconds: Int?
 
         public init(
             id: String,
@@ -15,7 +16,8 @@ public struct PluginManifest: Codable, Hashable, Identifiable, Sendable {
             description: String,
             icon: String,
             method: String,
-            requiresConfirmation: Bool = false
+            requiresConfirmation: Bool = false,
+            timeoutSeconds: Int? = nil
         ) {
             self.id = id
             self.title = title
@@ -23,6 +25,7 @@ public struct PluginManifest: Codable, Hashable, Identifiable, Sendable {
             self.icon = icon
             self.method = method
             self.requiresConfirmation = requiresConfirmation
+            self.timeoutSeconds = timeoutSeconds
         }
     }
 
@@ -205,6 +208,29 @@ public struct PluginManifest: Codable, Hashable, Identifiable, Sendable {
         self.featured = featured
         self.capabilities = capabilities
         self.actions = actions
+    }
+
+    public func describesSamePackage(as other: PluginManifest) -> Bool {
+        schemaVersion == other.schemaVersion
+            && id == other.id
+            && name == other.name
+            && summary == other.summary
+            && description == other.description
+            && version == other.version
+            && category == other.category
+            && author == other.author
+            && trustLevel == other.trustLevel
+            && releaseStatus == other.releaseStatus
+            && permissions == other.permissions
+            && networkDomains == other.networkDomains
+            && compatibility == other.compatibility
+            && entryPoint == other.entryPoint
+            && ui == other.ui
+            && repositoryURL == other.repositoryURL
+            && icon == other.icon
+            && featured == other.featured
+            && capabilities == other.capabilities
+            && actions == other.actions
     }
 }
 

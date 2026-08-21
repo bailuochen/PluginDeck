@@ -12,6 +12,10 @@ struct PluginDetailView: View {
         model.registry.installed.first { $0.id == plugin.id }
     }
 
+    private var updateAvailable: Bool {
+        model.updateAvailable(for: plugin)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             HStack(alignment: .top, spacing: 16) {
@@ -22,9 +26,8 @@ struct PluginDetailView: View {
                     Text(plugin.summary)
                         .foregroundStyle(.secondary)
                     HStack(spacing: 12) {
-                        TrustBadge(level: plugin.trustLevel)
+                        AuthorLabel(author: plugin.author)
                         Text("v\(plugin.version)")
-                        Text(plugin.author.name)
                     }
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -110,16 +113,37 @@ struct PluginDetailView: View {
                 if let installed {
                     Text("已安装 v\(installed.manifest.version)")
                         .foregroundStyle(.secondary)
+                    if updateAvailable {
+                        Toggle("我已了解更新权限", isOn: $confirmsPermissions)
+                            .toggleStyle(.checkbox)
+                    }
                     Spacer()
                     Button("卸载", role: .destructive) {
                         model.registry.uninstall(plugin.id)
                         dismiss()
                     }
-                    Button("打开插件") {
-                        model.destination = .installed
-                        dismiss()
+                    if updateAvailable {
+                        Button {
+                            installPlugin()
+                        } label: {
+                            if model.installingPluginID == plugin.id {
+                                ProgressView().controlSize(.small)
+                            } else {
+                                Text(installed.packagePath == nil ? "更新为独立插件" : "更新插件")
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(
+                            model.installingPluginID != nil
+                                || (!confirmsPermissions && !plugin.permissions.isEmpty)
+                        )
+                    } else {
+                        Button("打开插件") {
+                            model.destination = .installed
+                            dismiss()
+                        }
+                        .buttonStyle(.borderedProminent)
                     }
-                    .buttonStyle(.borderedProminent)
                 } else if plugin.releaseStatus == .planned {
                     Label("该插件正在规划中", systemImage: "clock")
                         .foregroundStyle(.secondary)
@@ -130,15 +154,7 @@ struct PluginDetailView: View {
                         .toggleStyle(.checkbox)
                     Spacer()
                     Button {
-                        Task {
-                            do {
-                                try await model.install(plugin)
-                                model.destination = .installed
-                                dismiss()
-                            } catch {
-                                installError = error.localizedDescription
-                            }
-                        }
+                        installPlugin()
                     } label: {
                         if model.installingPluginID == plugin.id {
                             ProgressView().controlSize(.small)
@@ -162,6 +178,18 @@ struct PluginDetailView: View {
             Button("好") { installError = nil }
         } message: {
             Text(installError ?? "未知错误")
+        }
+    }
+
+    private func installPlugin() {
+        Task {
+            do {
+                try await model.install(plugin)
+                model.destination = .installed
+                dismiss()
+            } catch {
+                installError = error.localizedDescription
+            }
         }
     }
 

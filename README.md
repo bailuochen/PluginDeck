@@ -2,7 +2,7 @@
 
 PluginDeck 是一个开源的 macOS 开发者插件工作台。它把 NVM、Homebrew、pyenv、Git 等命令行开发工具组织成可发现、可授权、可安装、可追踪的图形化插件。
 
-> 当前状态：早期开发版。平台骨架、完整的官方 NVM 插件模块和第三方插件自有页面协议已经可运行。
+> 当前状态：早期开发版。平台骨架、独立 NVM / Port Manager 插件和插件自有页面协议已经可运行。
 
 ![PluginDeck 插件市场](Assets/marketplace.png)
 
@@ -19,7 +19,7 @@ PluginDeck 是一个开源的 macOS 开发者插件工作台。它把 NVM、Home
 - 版本化 `plugin.json` 清单模型
 - 插件来源、信任级别、权限、网络域名和兼容性展示
 - 安装、启用、停用、卸载和本地状态持久化
-- 官方 NVM 工作区：已安装版本、在线版本、项目与环境四个完整区域
+- 独立 NVM 插件：已安装版本、在线版本、项目与环境四个完整区域
 - Node.js 发布日期、LTS、npm、V8、安全更新和 Mac 架构元数据
 - `nvm install` 安装进度、实时日志、取消、查询重试和下载停滞恢复
 - `.nvmrc` / `.node-version` / `package.json` 检测及项目一键就绪
@@ -28,7 +28,7 @@ PluginDeck 是一个开源的 macOS 开发者插件工作台。它把 NVM、Home
 - JSON-RPC 2.0 进程协议基础类型
 - 从本地目录或公开 HTTPS Git 仓库导入社区插件
 - 从远程 Marketplace Catalog 下载并校验 Release ZIP
-- 外部插件独立进程动作、60 秒超时和统一任务记录
+- 外部插件独立进程动作、可配置超时和统一任务记录
 - 插件自带 HTML/CSS/JavaScript 工作区及受控宿主桥接
 
 ## 本地运行
@@ -48,10 +48,10 @@ swift test
 构建可直接安装的 DMG：
 
 ```bash
-APP_VERSION=0.4.0 ./scripts/build-dmg.sh
+APP_VERSION=0.5.0 ./scripts/build-dmg.sh
 ```
 
-生成文件位于 `dist/PluginDeck-0.4.0.dmg`。项目通过 GitHub Releases 分发，不要求通过 Mac App Store 发布。未使用 Apple Developer ID 签名的构建首次打开时可能需要在“系统设置 -> 隐私与安全性”中确认。
+生成文件位于 `dist/PluginDeck-0.5.0.dmg`。项目通过 GitHub Releases 分发，不要求通过 Mac App Store 发布。未使用 Apple Developer ID 签名的构建首次打开时可能需要在“系统设置 -> 隐私与安全性”中确认。
 
 ## 插件架构
 
@@ -65,15 +65,14 @@ APP_VERSION=0.4.0 ./scripts/build-dmg.sh
 
 详细规范见 [插件规范](docs/PLUGIN_SPEC.md) 和 [架构说明](docs/ARCHITECTURE.md)。
 
-最小外部插件示例位于 [`examples/hello-plugin`](examples/hello-plugin)。打开“开发者中心”，选择“导入本地插件”，即可验证从清单检查、权限确认、安装到 JSON-RPC 动作执行的完整链路。
+最小外部插件示例位于 [`examples/hello-plugin`](examples/hello-plugin)。打开“插件市场”，选择“导入插件 -> 从本地目录导入”，即可验证从清单检查、权限确认、安装到 JSON-RPC 动作执行的完整链路。
 
 ## 路线图
 
-- 将 NVM 插件模块迁移为首个独立进程分发包
 - Marketplace 提交审核与恶意版本撤回列表
-- 插件更新、版本固定与回滚
+- 插件版本固定与回滚
 - 项目目录授权和长任务实时日志/取消
-- Homebrew、pyenv、Git Doctor 等官方插件
+- Homebrew、pyenv、Git Doctor 等开发工具插件
 
 ## 参与贡献
 
