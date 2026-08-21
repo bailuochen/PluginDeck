@@ -38,7 +38,15 @@ Schema version 1 describes a PluginDeck plugin package. A package contains `plug
   "repositoryURL": "https://github.com/example/tool",
   "icon": "wrench.and.screwdriver",
   "featured": false,
-  "capabilities": ["Inspect environment", "Run a repair"]
+  "capabilities": ["Inspect environment", "Run a repair"],
+  "actions": [{
+    "id": "inspect",
+    "title": "Inspect environment",
+    "description": "Read the current tool configuration.",
+    "icon": "stethoscope",
+    "method": "environment.inspect",
+    "requiresConfirmation": false
+  }]
 }
 ```
 
@@ -49,6 +57,7 @@ Schema version 1 describes a PluginDeck plugin package. A package contains `plug
 - `minimumHostVersion` declares the oldest compatible PluginDeck release.
 - `architectures` contains `arm64`, `x86_64`, or both.
 - `entryPoint.executable` must be a relative path inside the package.
+- `actions` declares the commands rendered by the host. Version 1 external plugins must declare at least one action.
 
 ## Permissions
 
@@ -59,3 +68,19 @@ The `shell` permission is high risk. User-facing actions must expose the command
 ## Distribution
 
 Published packages use HTTPS URLs and must include a SHA-256 digest. Marketplace CI rejects mutable URLs, duplicate IDs, invalid schemas and missing compatibility metadata.
+
+## Runtime protocol
+
+For each action, PluginDeck starts a fresh plugin process, writes one JSON-RPC 2.0 request followed by a newline to standard input, and reads one response from standard output. Diagnostic logs belong on standard error.
+
+Request parameters contain `pluginID`, `actionID`, and the plugin-owned `dataDirectory`. The response result has `title`, `message`, and optional `detail` strings. Processes have a 60 second timeout.
+
+See `examples/hello-plugin` for an executable reference package. In Developer Center, choose “Import local plugin” and select that directory.
+
+## Import and marketplace flow
+
+- Local development: select a directory containing `plugin.json`.
+- Public Git repository: enter an HTTPS clone URL whose repository root contains `plugin.json`.
+- Marketplace: publish an immutable ZIP release, add its exact manifest and SHA-256 to `marketplace/catalog.json`, then open a pull request.
+
+Local and Git imports are always treated as `community`; a repository cannot grant itself official or verified status.

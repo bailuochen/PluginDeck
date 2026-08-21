@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct DeveloperCenterView: View {
+    @EnvironmentObject private var model: AppModel
+    @State private var importMode: PluginImportMode?
     private let repositoryURL = URL(string: "https://github.com/bailuochen/PluginDeck")!
 
     var body: some View {
@@ -10,6 +12,21 @@ struct DeveloperCenterView: View {
                     title: "开发者中心",
                     subtitle: "为 PluginDeck 构建权限透明、可独立运行的开发工具插件。"
                 )
+
+                HStack(spacing: 10) {
+                    Button {
+                        importMode = .local
+                    } label: {
+                        Label("导入本地插件", systemImage: "folder.badge.plus")
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    Button {
+                        importMode = .git
+                    } label: {
+                        Label("从 Git 仓库导入", systemImage: "arrow.triangle.branch")
+                    }
+                }
 
                 VStack(alignment: .leading, spacing: 12) {
                     Text("插件基础约定").font(.headline)
@@ -30,12 +47,22 @@ struct DeveloperCenterView: View {
 
                 VStack(alignment: .leading, spacing: 10) {
                     Text("安全边界").font(.headline)
-                    Text("PluginDeck 不会将第三方 Swift 动态库加载进宿主。可执行插件运行在独立子进程中；宿主只通过版本化 JSON-RPC 协议开放有限能力。")
+                    Text("PluginDeck 不会将第三方 Swift 动态库加载进宿主。独立进程和 JSON-RPC 用于保护宿主稳定性，但普通可执行插件仍拥有当前 macOS 用户权限；清单权限用于安装前审计，不能替代系统沙箱。")
                         .foregroundStyle(.secondary)
                 }
             }
             .padding(28)
             .frame(maxWidth: 900, alignment: .leading)
+        }
+        .sheet(item: $importMode) { mode in
+            PluginImportView(
+                mode: mode,
+                registry: model.registry,
+                installer: model.pluginInstaller
+            ) { artifact in
+                model.destination = .installed
+                model.selectedPlugin = artifact.manifest
+            }
         }
     }
 

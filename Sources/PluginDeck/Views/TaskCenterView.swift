@@ -45,7 +45,7 @@ struct TaskCenterView: View {
                         VStack(alignment: .trailing, spacing: 4) {
                             Text(statusTitle(task.status))
                                 .font(.caption.weight(.medium))
-                            Text(task.startedAt, style: .relative)
+                            Text(task.activityDate.formatted(date: .abbreviated, time: .shortened))
                                 .font(.caption)
                                 .foregroundStyle(.tertiary)
                         }
@@ -87,6 +87,7 @@ struct TaskCenterView: View {
         case .update: "更新"
         case .enable: "启用"
         case .disable: "停用"
+        case .run: "运行"
         }
     }
 }

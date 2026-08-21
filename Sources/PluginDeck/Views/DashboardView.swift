@@ -131,7 +131,7 @@ struct DashboardView: View {
                     Text(task.message)
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Text(task.startedAt, style: .relative)
+                    Text(task.activityDate.formatted(date: .abbreviated, time: .shortened))
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                 }

@@ -11,10 +11,26 @@ struct MarketplaceView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                PageHeader(
-                    title: "插件市场",
-                    subtitle: "发现经过清单校验、权限透明的开发工具插件。"
-                )
+                HStack(alignment: .top) {
+                    PageHeader(
+                        title: "插件市场",
+                        subtitle: "发现经过清单校验、权限透明的开发工具插件。"
+                    )
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Button {
+                            Task { await model.refreshMarketplaceCatalog() }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                        }
+                        .help("同步远程目录")
+                        if let status = model.marketplaceStatus {
+                            Text(status)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
 
                 filters
 

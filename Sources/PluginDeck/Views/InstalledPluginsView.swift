@@ -62,6 +62,9 @@ struct InstalledPluginsView: View {
                             disabledView(plugin)
                         } else if plugin.id == "dev.plugindeck.nvm" {
                             NVMPluginWorkspaceView(registry: model.registry)
+                        } else if plugin.packagePath != nil,
+                                  !(plugin.manifest.actions ?? []).isEmpty {
+                            ExternalPluginWorkspaceView(plugin: plugin, registry: model.registry)
                         } else {
                             genericWorkspace(plugin)
                         }

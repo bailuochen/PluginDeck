@@ -6,6 +6,7 @@ struct PluginDetailView: View {
     @Environment(\.dismiss) private var dismiss
     let plugin: PluginManifest
     @State private var confirmsPermissions = false
+    @State private var installError: String?
 
     private var installed: InstalledPlugin? {
         model.registry.installed.first { $0.id == plugin.id }
@@ -58,6 +59,13 @@ struct PluginDetailView: View {
 
                     section("权限") {
                         VStack(alignment: .leading, spacing: 10) {
+                            if plugin.trustLevel == .community {
+                                Label(
+                                    "社区插件会以当前 macOS 用户权限运行，请仅安装你信任的源代码。",
+                                    systemImage: "exclamationmark.shield"
+                                )
+                                .foregroundStyle(.orange)
+                            }
                             if plugin.permissions.isEmpty {
                                 Text("此插件不申请额外权限")
                                     .foregroundStyle(.secondary)
@@ -121,16 +129,39 @@ struct PluginDetailView: View {
                     Toggle("我已了解上述权限", isOn: $confirmsPermissions)
                         .toggleStyle(.checkbox)
                     Spacer()
-                    Button("安装插件") {
-                        model.registry.install(plugin)
-                        model.destination = .installed
-                        dismiss()
+                    Button {
+                        Task {
+                            do {
+                                try await model.install(plugin)
+                                model.destination = .installed
+                                dismiss()
+                            } catch {
+                                installError = error.localizedDescription
+                            }
+                        }
+                    } label: {
+                        if model.installingPluginID == plugin.id {
+                            ProgressView().controlSize(.small)
+                        } else {
+                            Text("安装插件")
+                        }
                     }
                     .buttonStyle(.borderedProminent)
-                    .disabled(!confirmsPermissions && !plugin.permissions.isEmpty)
+                    .disabled(
+                        model.installingPluginID != nil
+                            || (!confirmsPermissions && !plugin.permissions.isEmpty)
+                    )
                 }
             }
             .padding(18)
+        }
+        .alert("安装失败", isPresented: Binding(
+            get: { installError != nil },
+            set: { if !$0 { installError = nil } }
+        )) {
+            Button("好") { installError = nil }
+        } message: {
+            Text(installError ?? "未知错误")
         }
     }
 

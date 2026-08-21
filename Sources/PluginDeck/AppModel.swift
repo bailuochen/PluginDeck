@@ -42,12 +42,19 @@ final class AppModel: ObservableObject {
     @Published var selectedPlugin: PluginManifest?
     @Published var searchText = ""
     @Published var selectedCategory: PluginManifest.Category?
+    @Published var installingPluginID: String?
+    @Published var marketplaceStatus: String?
 
     let registry = PluginRegistry()
+    lazy var pluginInstaller = PluginPackageInstaller(pluginsDirectory: registry.pluginsDirectory)
+    private let remoteCatalogURL = URL(
+        string: "https://raw.githubusercontent.com/bailuochen/PluginDeck/main/marketplace/catalog.json"
+    )!
 
     init() {
         registry.load()
         loadCatalog()
+        Task { await refreshMarketplaceCatalog() }
     }
 
     var filteredCatalog: [PluginManifest] {
@@ -69,6 +76,49 @@ final class AppModel: ObservableObject {
     func openInstalled(_ plugin: InstalledPlugin) {
         selectedPlugin = plugin.manifest
         destination = .installed
+    }
+
+    func install(_ plugin: PluginManifest) async throws {
+        guard installingPluginID == nil else { return }
+        installingPluginID = plugin.id
+        defer { installingPluginID = nil }
+
+        if plugin.id == "dev.plugindeck.nvm" {
+            registry.install(plugin, source: .builtIn)
+            return
+        }
+        let candidate = try await pluginInstaller.prepareMarketplacePlugin(plugin)
+        let artifact = try await pluginInstaller.install(candidate)
+        registry.install(
+            artifact.manifest,
+            packagePath: artifact.packageDirectory.path,
+            source: artifact.source
+        )
+    }
+
+    func refreshMarketplaceCatalog() async {
+        do {
+            let (data, response) = try await URLSession.shared.data(from: remoteCatalogURL)
+            guard let http = response as? HTTPURLResponse,
+                  (200..<300).contains(http.statusCode) else { return }
+            let remote = try PluginCatalog.decode(data)
+            var merged = Dictionary(uniqueKeysWithValues: catalog.map { ($0.id, $0) })
+            for plugin in remote.plugins {
+                try PluginManifestValidator.validate(
+                    plugin,
+                    externalImport: true,
+                    marketplace: true
+                )
+                merged[plugin.id] = plugin
+            }
+            catalog = merged.values.sorted {
+                if $0.featured != $1.featured { return $0.featured && !$1.featured }
+                return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+            }
+            marketplaceStatus = "已同步远程目录"
+        } catch {
+            marketplaceStatus = "使用内置目录"
+        }
     }
 
     private func loadCatalog() {

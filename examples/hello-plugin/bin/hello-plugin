@@ -1,0 +1,26 @@
+#!/bin/zsh
+
+set -eu
+
+IFS= read -r request
+request_id=$(print -r -- "$request" | sed -E 's/.*"id"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/')
+method=$(print -r -- "$request" | sed -E 's/.*"method"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/')
+
+case "$method" in
+    hello.greet)
+        title="Hello from a plugin"
+        message="The external JSON-RPC process is working."
+        detail="Plugin ID: ${PLUGINDECK_PLUGIN_ID:-unknown}"
+        ;;
+    system.summary)
+        title="System summary"
+        message="System information read successfully."
+        detail="$(sw_vers -productName) $(sw_vers -productVersion) · $(uname -m)"
+        ;;
+    *)
+        print -r -- "{\"jsonrpc\":\"2.0\",\"id\":\"$request_id\",\"error\":{\"code\":-32601,\"message\":\"Method not found\"}}"
+        exit 0
+        ;;
+esac
+
+print -r -- "{\"jsonrpc\":\"2.0\",\"id\":\"$request_id\",\"result\":{\"title\":\"$title\",\"message\":\"$message\",\"detail\":\"$detail\"}}"

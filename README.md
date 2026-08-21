@@ -26,6 +26,9 @@ PluginDeck 是一个开源的 macOS 开发者插件工作台。它把 NVM、Home
 - NVM 路径、Shell、Terminal 权限健康检查及自定义 NVM 目录
 - 与插件任务同步的统一任务记录
 - JSON-RPC 2.0 进程协议基础类型
+- 从本地目录或公开 HTTPS Git 仓库导入社区插件
+- 从远程 Marketplace Catalog 下载并校验 Release ZIP
+- 外部插件独立进程动作、60 秒超时和统一任务记录
 
 ## 本地运行
 
@@ -44,10 +47,10 @@ swift test
 构建可直接安装的 DMG：
 
 ```bash
-APP_VERSION=0.2.0 ./scripts/build-dmg.sh
+APP_VERSION=0.3.0 ./scripts/build-dmg.sh
 ```
 
-生成文件位于 `dist/PluginDeck-0.2.0.dmg`。项目通过 GitHub Releases 分发，不要求通过 Mac App Store 发布。未使用 Apple Developer ID 签名的构建首次打开时可能需要在“系统设置 -> 隐私与安全性”中确认。
+生成文件位于 `dist/PluginDeck-0.3.0.dmg`。项目通过 GitHub Releases 分发，不要求通过 Mac App Store 发布。未使用 Apple Developer ID 签名的构建首次打开时可能需要在“系统设置 -> 隐私与安全性”中确认。
 
 ## 插件架构
 
@@ -61,11 +64,12 @@ APP_VERSION=0.2.0 ./scripts/build-dmg.sh
 
 详细规范见 [插件规范](docs/PLUGIN_SPEC.md) 和 [架构说明](docs/ARCHITECTURE.md)。
 
+最小外部插件示例位于 [`examples/hello-plugin`](examples/hello-plugin)。打开“开发者中心”，选择“导入本地插件”，即可验证从清单检查、权限确认、安装到 JSON-RPC 动作执行的完整链路。
+
 ## 路线图
 
 - 将 NVM 插件模块迁移为首个独立进程分发包
-- GitHub 托管的 Marketplace Catalog
-- ZIP 下载、校验、原子安装和失败恢复
+- Marketplace 提交审核与恶意版本撤回列表
 - 插件更新、版本固定与回滚
 - 项目目录授权和长任务实时日志/取消
 - Homebrew、pyenv、Git Doctor 等官方插件

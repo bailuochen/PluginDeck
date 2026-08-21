@@ -4,7 +4,7 @@ set -euo pipefail
 
 project_dir="${0:A:h:h}"
 app_dir="$project_dir/dist/PluginDeck.app"
-version="${APP_VERSION:-0.2.0}"
+version="${APP_VERSION:-0.3.0}"
 universal="${UNIVERSAL:-0}"
 
 if [[ ! "$version" =~ '^[0-9]+\.[0-9]+\.[0-9]+$' ]]; then
@@ -60,6 +60,8 @@ cat > "$app_dir/Contents/Info.plist" <<PLIST
     <string>public.app-category.developer-tools</string>
     <key>LSMinimumSystemVersion</key>
     <string>13.0</string>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>用于由开发工具插件打开 Terminal 并执行用户确认的命令。</string>
     <key>NSHumanReadableCopyright</key>
     <string>Copyright © 2026 PluginDeck Contributors</string>
 </dict>

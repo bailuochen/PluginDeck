@@ -9,11 +9,14 @@ public final class PluginRegistry: ObservableObject {
     private let storageURL: URL
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
+    public let pluginsDirectory: URL
 
     public init(storageURL: URL) {
         self.storageURL = storageURL
         self.encoder = JSONEncoder()
         self.decoder = JSONDecoder()
+        self.pluginsDirectory = storageURL.deletingLastPathComponent()
+            .appendingPathComponent("Plugins", isDirectory: true)
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         encoder.dateEncodingStrategy = .iso8601
         decoder.dateDecodingStrategy = .iso8601
@@ -40,20 +43,37 @@ public final class PluginRegistry: ObservableObject {
         installed.contains { $0.id == pluginID }
     }
 
-    public func install(_ manifest: PluginManifest) {
-        guard !isInstalled(manifest.id) else { return }
+    public func install(
+        _ manifest: PluginManifest,
+        packagePath: String? = nil,
+        source: PluginInstallationSource = .builtIn
+    ) {
+        let existingIndex = installed.firstIndex { $0.id == manifest.id }
         var task = PluginTask(
             pluginID: manifest.id,
             pluginName: manifest.name,
-            kind: .install,
+            kind: existingIndex == nil ? .install : .update,
             message: "正在验证插件清单"
         )
         tasks.insert(task, at: 0)
 
-        installed.append(InstalledPlugin(manifest: manifest))
+        let previous = existingIndex.map { installed[$0] }
+        let record = InstalledPlugin(
+            manifest: manifest,
+            isEnabled: previous?.isEnabled ?? true,
+            installedAt: previous?.installedAt ?? .now,
+            updatedAt: .now,
+            packagePath: packagePath,
+            source: source
+        )
+        if let existingIndex {
+            installed[existingIndex] = record
+        } else {
+            installed.append(record)
+        }
         task.status = .completed
         task.finishedAt = .now
-        task.message = "插件已安装并启用"
+        task.message = existingIndex == nil ? "插件已安装并启用" : "插件已更新"
         replaceTask(task)
         persist()
     }
@@ -67,10 +87,13 @@ public final class PluginRegistry: ObservableObject {
             message: "正在移除插件"
         )
         tasks.insert(task, at: 0)
+        if plugin.packagePath != nil {
+            removePluginFiles(pluginID: pluginID)
+        }
         installed.removeAll { $0.id == pluginID }
         task.status = .completed
         task.finishedAt = .now
-        task.message = "插件数据已移除"
+        task.message = "插件代码已移除，插件数据已保留"
         replaceTask(task)
         persist()
     }
@@ -150,6 +173,13 @@ public final class PluginRegistry: ObservableObject {
         } catch {
             assertionFailure("Unable to persist PluginDeck state: \(error)")
         }
+    }
+
+    private func removePluginFiles(pluginID: String) {
+        let root = pluginsDirectory.standardizedFileURL
+        let target = root.appendingPathComponent(pluginID, isDirectory: true).standardizedFileURL
+        guard target.path.hasPrefix(root.path + "/") else { return }
+        try? FileManager.default.removeItem(at: target)
     }
 
     private struct State: Codable {

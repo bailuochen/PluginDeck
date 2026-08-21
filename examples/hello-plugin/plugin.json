@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "dev.plugindeck.example.hello",
+  "name": "Hello Developer",
+  "summary": "A minimal external PluginDeck action plugin.",
+  "description": "Demonstrates the version 1 manifest and newline-delimited JSON-RPC action protocol.",
+  "version": "1.0.0",
+  "category": "system",
+  "author": {
+    "name": "PluginDeck Contributors",
+    "url": "https://github.com/bailuochen/PluginDeck"
+  },
+  "trustLevel": "community",
+  "releaseStatus": "available",
+  "permissions": ["shell", "process.read"],
+  "networkDomains": [],
+  "compatibility": {
+    "minimumHostVersion": "0.3.0",
+    "minimumMacOSVersion": "13.0",
+    "architectures": ["arm64", "x86_64"]
+  },
+  "entryPoint": {
+    "executable": "bin/hello-plugin",
+    "protocolVersion": 1
+  },
+  "distribution": {},
+  "repositoryURL": "https://github.com/bailuochen/PluginDeck",
+  "icon": "hand.wave",
+  "featured": false,
+  "capabilities": ["Greet the user", "Inspect basic macOS information"],
+  "actions": [
+    {
+      "id": "hello",
+      "title": "Say hello",
+      "description": "Return a greeting from an external process.",
+      "icon": "hand.wave",
+      "method": "hello.greet",
+      "requiresConfirmation": false
+    },
+    {
+      "id": "system-info",
+      "title": "Read system summary",
+      "description": "Read the macOS version and CPU architecture.",
+      "icon": "desktopcomputer",
+      "method": "system.summary",
+      "requiresConfirmation": true
+    }
+  ]
+}

@@ -1,6 +1,31 @@
 import Foundation
 
 public struct PluginManifest: Codable, Hashable, Identifiable, Sendable {
+    public struct Action: Codable, Hashable, Identifiable, Sendable {
+        public let id: String
+        public let title: String
+        public let description: String
+        public let icon: String
+        public let method: String
+        public let requiresConfirmation: Bool
+
+        public init(
+            id: String,
+            title: String,
+            description: String,
+            icon: String,
+            method: String,
+            requiresConfirmation: Bool = false
+        ) {
+            self.id = id
+            self.title = title
+            self.description = description
+            self.icon = icon
+            self.method = method
+            self.requiresConfirmation = requiresConfirmation
+        }
+    }
+
     public struct EntryPoint: Codable, Hashable, Sendable {
         public let executable: String
         public let protocolVersion: Int
@@ -123,6 +148,7 @@ public struct PluginManifest: Codable, Hashable, Identifiable, Sendable {
     public let icon: String
     public let featured: Bool
     public let capabilities: [String]
+    public let actions: [Action]?
 
     public init(
         schemaVersion: Int = 1,
@@ -143,7 +169,8 @@ public struct PluginManifest: Codable, Hashable, Identifiable, Sendable {
         repositoryURL: URL? = nil,
         icon: String,
         featured: Bool = false,
-        capabilities: [String] = []
+        capabilities: [String] = [],
+        actions: [Action] = []
     ) {
         self.schemaVersion = schemaVersion
         self.id = id
@@ -164,6 +191,23 @@ public struct PluginManifest: Codable, Hashable, Identifiable, Sendable {
         self.icon = icon
         self.featured = featured
         self.capabilities = capabilities
+        self.actions = actions
+    }
+}
+
+public enum PluginInstallationSource: String, Codable, Hashable, Sendable {
+    case builtIn = "built-in"
+    case local
+    case git
+    case marketplace
+
+    public var displayName: String {
+        switch self {
+        case .builtIn: "内置"
+        case .local: "本地目录"
+        case .git: "Git 仓库"
+        case .marketplace: "插件市场"
+        }
     }
 }
 
@@ -173,17 +217,23 @@ public struct InstalledPlugin: Codable, Hashable, Identifiable, Sendable {
     public var isEnabled: Bool
     public let installedAt: Date
     public var updatedAt: Date
+    public let packagePath: String?
+    public let source: PluginInstallationSource?
 
     public init(
         manifest: PluginManifest,
         isEnabled: Bool = true,
         installedAt: Date = .now,
-        updatedAt: Date = .now
+        updatedAt: Date = .now,
+        packagePath: String? = nil,
+        source: PluginInstallationSource = .builtIn
     ) {
         self.manifest = manifest
         self.isEnabled = isEnabled
         self.installedAt = installedAt
         self.updatedAt = updatedAt
+        self.packagePath = packagePath
+        self.source = source
     }
 }
 
@@ -194,6 +244,7 @@ public struct PluginTask: Codable, Hashable, Identifiable, Sendable {
         case update
         case enable
         case disable
+        case run
     }
 
     public enum Status: String, Codable, Sendable {
@@ -211,6 +262,10 @@ public struct PluginTask: Codable, Hashable, Identifiable, Sendable {
     public let startedAt: Date
     public var finishedAt: Date?
     public var message: String
+
+    public var activityDate: Date {
+        finishedAt ?? startedAt
+    }
 
     public init(
         id: UUID = UUID(),

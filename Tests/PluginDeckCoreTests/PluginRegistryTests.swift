@@ -2,6 +2,28 @@ import Foundation
 import Testing
 @testable import PluginDeckCore
 
+@Test func activityDateUsesCompletionTimeWhenAvailable() {
+        let startedAt = Date(timeIntervalSince1970: 100)
+        let finishedAt = Date(timeIntervalSince1970: 160)
+        let completed = PluginTask(
+            pluginID: "dev.example.tool",
+            pluginName: "Tool",
+            kind: .run,
+            status: .completed,
+            startedAt: startedAt,
+            finishedAt: finishedAt
+        )
+        let running = PluginTask(
+            pluginID: "dev.example.tool",
+            pluginName: "Tool",
+            kind: .run,
+            startedAt: startedAt
+        )
+
+        #expect(completed.activityDate == finishedAt)
+        #expect(running.activityDate == startedAt)
+}
+
 @MainActor
 @Test func installDisableAndUninstall() throws {
         let directory = FileManager.default.temporaryDirectory

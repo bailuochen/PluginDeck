@@ -36,6 +36,8 @@ Catalog entries distinguish official, verified community, and unverified communi
 
 Static permissions are displayed before installation. Dynamic resources, such as a project folder, are selected at the moment of use. An update that adds permissions requires confirmation. Environment variables and secrets are not inherited unless the host explicitly grants them.
 
+Version 1 executable plugins are not strongly sandboxed. They run in a separate process for host stability, but macOS still gives that process the current user's filesystem and process privileges. Manifest permissions are auditable declarations, not an enforcement boundary. PluginDeck therefore labels direct imports as community code, requires an explicit execution warning, strips inherited secret environment variables, and recommends source review. Strong capability enforcement requires a future sandboxed helper architecture.
+
 ## Migration note
 
 The complete NVM plugin is currently compiled as a separate Swift module and mounted by the host so the product remains useful while the process protocol is being implemented. Its models, service, parsers, views and tests are isolated from the host application target. It will become the first standalone reference plugin package.
