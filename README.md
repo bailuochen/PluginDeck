@@ -1,0 +1,75 @@
+# PluginDeck
+
+PluginDeck 是一个开源的 macOS 开发者插件工作台。它把 NVM、Homebrew、pyenv、Git 等命令行开发工具组织成可发现、可授权、可安装、可追踪的图形化插件。
+
+> 当前状态：早期开发版。平台骨架和官方 NVM 内置适配器已经可运行，第三方插件安装协议仍在演进。
+
+![PluginDeck 插件市场](Assets/marketplace.png)
+
+![PluginDeck NVM 工作区](Assets/nvm-workspace.png)
+
+## 为什么做 PluginDeck
+
+独立的工具面板很快会变成一组互不相通的应用。PluginDeck 负责共用能力：插件发现、来源与权限展示、安装和更新、任务日志、禁用、卸载及回滚。每个插件只专注于一种开发工具。
+
+## 当前功能
+
+- 原生 SwiftUI macOS 宿主应用
+- 首页、插件市场、已安装、任务中心、设置与开发者中心
+- 版本化 `plugin.json` 清单模型
+- 插件来源、信任级别、权限、网络域名和兼容性展示
+- 安装、启用、停用、卸载和本地状态持久化
+- 官方 NVM 工作区：环境检测、已安装版本、`nvm install`、`nvm uninstall`、默认版本
+- 统一任务记录
+- JSON-RPC 2.0 进程协议基础类型
+
+## 本地运行
+
+要求 macOS 13 或更高版本，以及 Swift 6 / Xcode 16。
+
+```bash
+swift run PluginDeck
+```
+
+运行测试：
+
+```bash
+swift test
+```
+
+构建可直接安装的 DMG：
+
+```bash
+APP_VERSION=0.1.0 ./scripts/build-dmg.sh
+```
+
+生成文件位于 `dist/PluginDeck-0.1.0.dmg`。项目通过 GitHub Releases 分发，不要求通过 Mac App Store 发布。未使用 Apple Developer ID 签名的构建首次打开时可能需要在“系统设置 -> 隐私与安全性”中确认。
+
+## 插件架构
+
+第三方插件不会作为 Swift 动态库加载进宿主进程。正式插件以独立进程运行，通过窄化、版本化的 JSON-RPC 协议与宿主通信。安装前宿主验证：
+
+- manifest schema 与插件 ID
+- macOS、CPU 架构和宿主 API 兼容性
+- 下载包 SHA-256
+- 声明权限及允许访问的网络域名
+- 发布来源与信任级别
+
+详细规范见 [插件规范](docs/PLUGIN_SPEC.md) 和 [架构说明](docs/ARCHITECTURE.md)。
+
+## 路线图
+
+- 将 NVM 内置适配器迁移为首个独立进程插件
+- GitHub 托管的 Marketplace Catalog
+- ZIP 下载、校验、原子安装和失败恢复
+- 插件更新、版本固定与回滚
+- 项目目录授权和长任务实时日志/取消
+- Homebrew、pyenv、Git Doctor 等官方插件
+
+## 参与贡献
+
+欢迎提交 Issue 和 Pull Request。涉及插件权限、安装器或进程通信的改动，请同时说明安全边界和失败恢复方式。
+
+## License
+
+[MIT](LICENSE)

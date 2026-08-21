@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-08-21T00:00:00Z",
+  "plugins": [
+    {
+      "schemaVersion": 1,
+      "id": "dev.plugindeck.nvm",
+      "name": "NVM",
+      "summary": "可视化管理 Node.js 版本、默认环境与项目运行时。",
+      "description": "PluginDeck 的首个官方插件。使用本机已有的 NVM 完成 Node.js 版本安装、卸载、默认版本管理和环境诊断。所有命令均通过 NVM 执行。",
+      "version": "0.1.0",
+      "category": "runtimes",
+      "author": {
+        "name": "PluginDeck",
+        "url": "https://github.com/bailuochen/PluginDeck"
+      },
+      "trustLevel": "official",
+      "releaseStatus": "available",
+      "permissions": ["network", "shell", "file.read"],
+      "networkDomains": ["nodejs.org", "github.com"],
+      "compatibility": {
+        "minimumHostVersion": "0.1.0",
+        "minimumMacOSVersion": "13.0",
+        "architectures": ["arm64", "x86_64"]
+      },
+      "entryPoint": {
+        "executable": "builtin:nvm",
+        "protocolVersion": 1
+      },
+      "distribution": {},
+      "repositoryURL": "https://github.com/bailuochen/NVM-Switcher",
+      "icon": "point.3.connected.trianglepath.dotted",
+      "featured": true,
+      "capabilities": [
+        "检测 NVM 环境",
+        "安装与卸载 Node.js",
+        "设置新终端默认版本",
+        "查看统一任务记录"
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "id": "dev.plugindeck.homebrew",
+      "name": "Homebrew",
+      "summary": "查找、安装、升级并诊断 Homebrew 软件包。",
+      "description": "面向 Homebrew formula 和 cask 的统一管理工作区。",
+      "version": "0.1.0",
+      "category": "package-managers",
+      "author": { "name": "PluginDeck" },
+      "trustLevel": "official",
+      "releaseStatus": "planned",
+      "permissions": ["network", "shell", "file.read", "file.write"],
+      "networkDomains": ["brew.sh", "github.com"],
+      "compatibility": {
+        "minimumHostVersion": "0.2.0",
+        "minimumMacOSVersion": "13.0",
+        "architectures": ["arm64", "x86_64"]
+      },
+      "distribution": {},
+      "repositoryURL": "https://github.com/bailuochen/PluginDeck",
+      "icon": "mug",
+      "featured": true,
+      "capabilities": ["软件包搜索", "安装与升级", "环境诊断"]
+    },
+    {
+      "schemaVersion": 1,
+      "id": "dev.plugindeck.pyenv",
+      "name": "pyenv",
+      "summary": "管理 Python 版本并为项目选择本地运行时。",
+      "description": "提供 Python 版本发现、安装与项目版本管理。",
+      "version": "0.1.0",
+      "category": "runtimes",
+      "author": { "name": "PluginDeck" },
+      "trustLevel": "official",
+      "releaseStatus": "planned",
+      "permissions": ["network", "shell", "file.read", "file.write"],
+      "networkDomains": ["python.org", "github.com"],
+      "compatibility": {
+        "minimumHostVersion": "0.2.0",
+        "minimumMacOSVersion": "13.0",
+        "architectures": ["arm64", "x86_64"]
+      },
+      "distribution": {},
+      "repositoryURL": "https://github.com/bailuochen/PluginDeck",
+      "icon": "chevron.left.forwardslash.chevron.right",
+      "featured": true,
+      "capabilities": ["Python 版本管理", "项目版本检测", "环境诊断"]
+    },
+    {
+      "schemaVersion": 1,
+      "id": "dev.plugindeck.git",
+      "name": "Git Doctor",
+      "summary": "检查 Git 身份、凭据、SSH 与仓库环境。",
+      "description": "集中诊断常见 Git 和 GitHub 本机配置问题。",
+      "version": "0.1.0",
+      "category": "source-control",
+      "author": { "name": "PluginDeck" },
+      "trustLevel": "official",
+      "releaseStatus": "planned",
+      "permissions": ["shell", "file.read"],
+      "networkDomains": ["github.com"],
+      "compatibility": {
+        "minimumHostVersion": "0.2.0",
+        "minimumMacOSVersion": "13.0",
+        "architectures": ["arm64", "x86_64"]
+      },
+      "distribution": {},
+      "repositoryURL": "https://github.com/bailuochen/PluginDeck",
+      "icon": "arrow.triangle.branch",
+      "featured": false,
+      "capabilities": ["身份检查", "凭据诊断", "SSH 连通性"]
+    },
+    {
+      "schemaVersion": 1,
+      "id": "dev.plugindeck.docker",
+      "name": "Docker",
+      "summary": "查看容器运行状态、资源占用与常见故障。",
+      "description": "轻量 Docker Desktop 辅助与诊断工具。",
+      "version": "0.1.0",
+      "category": "containers",
+      "author": { "name": "PluginDeck" },
+      "trustLevel": "official",
+      "releaseStatus": "planned",
+      "permissions": ["shell", "process.read"],
+      "networkDomains": [],
+      "compatibility": {
+        "minimumHostVersion": "0.3.0",
+        "minimumMacOSVersion": "13.0",
+        "architectures": ["arm64", "x86_64"]
+      },
+      "distribution": {},
+      "repositoryURL": "https://github.com/bailuochen/PluginDeck",
+      "icon": "shippingbox",
+      "featured": false,
+      "capabilities": ["容器状态", "资源概览", "环境诊断"]
+    },
+    {
+      "schemaVersion": 1,
+      "id": "dev.plugindeck.shell-doctor",
+      "name": "Shell Doctor",
+      "summary": "检查 PATH、启动脚本和常用开发命令冲突。",
+      "description": "只读分析 shell 环境并给出可复制的修复建议。",
+      "version": "0.1.0",
+      "category": "system",
+      "author": { "name": "PluginDeck" },
+      "trustLevel": "official",
+      "releaseStatus": "planned",
+      "permissions": ["shell", "file.read", "process.read"],
+      "networkDomains": [],
+      "compatibility": {
+        "minimumHostVersion": "0.2.0",
+        "minimumMacOSVersion": "13.0",
+        "architectures": ["arm64", "x86_64"]
+      },
+      "distribution": {},
+      "repositoryURL": "https://github.com/bailuochen/PluginDeck",
+      "icon": "terminal",
+      "featured": false,
+      "capabilities": ["PATH 分析", "启动脚本检查", "冲突诊断"]
+    }
+  ]
+}
