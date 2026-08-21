@@ -107,7 +107,17 @@ final class AppModel: ObservableObject {
 
     func refreshMarketplaceCatalog() async {
         do {
-            let (data, response) = try await URLSession.shared.data(from: remoteCatalogURL)
+            var components = URLComponents(url: remoteCatalogURL, resolvingAgainstBaseURL: false)
+            components?.queryItems = [
+                URLQueryItem(name: "t", value: String(Int(Date.now.timeIntervalSince1970)))
+            ]
+            var request = URLRequest(
+                url: components?.url ?? remoteCatalogURL,
+                cachePolicy: .reloadIgnoringLocalCacheData,
+                timeoutInterval: 15
+            )
+            request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+            let (data, response) = try await URLSession.shared.data(for: request)
             guard let http = response as? HTTPURLResponse,
                   (200..<300).contains(http.statusCode) else { return }
             let remote = try PluginCatalog.decode(data)
