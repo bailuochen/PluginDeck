@@ -8,6 +8,12 @@ PluginDeck 是一个开源的 macOS 开发者插件工作台。它把 NVM、Home
 
 ![PluginDeck NVM 工作区](Assets/nvm-workspace.png)
 
+## 技术架构
+
+![PluginDeck 技术架构](Assets/technical-architecture.svg)
+
+PluginDeck 采用宿主平台与插件能力分离的五层架构。平台负责插件发现、校验、安装、授权、进程调度和任务记录；插件负责自己的界面、输入与业务逻辑，并通过 JSON-RPC 2.0 独立进程访问声明的本机能力。
+
 ## 为什么做 PluginDeck
 
 独立的工具面板很快会变成一组互不相通的应用。PluginDeck 负责共用能力：插件发现、来源与权限展示、安装和更新、任务日志、禁用、卸载及回滚。每个插件只专注于一种开发工具。

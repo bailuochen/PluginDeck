@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1120" viewBox="0 0 1600 1120" role="img" aria-labelledby="title desc">
+  <title id="title">PluginDeck 技术架构</title>
+  <desc id="desc">PluginDeck 开放式 macOS 开发工具插件平台的五层技术架构，包括生态接入、平台应用、核心服务、插件运行和本机资源。</desc>
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="7" flood-color="#172033" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#64748b"/>
+    </marker>
+    <style>
+      .title { font: 600 42px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #172033; }
+      .subtitle { font: 400 21px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #64748b; }
+      .layer-title { font: 600 24px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #ffffff; text-anchor: middle; }
+      .layer-en { font: 400 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #cbd5e1; text-anchor: middle; }
+      .node-title { font: 600 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #172033; text-anchor: middle; }
+      .node-sub { font: 400 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #64748b; text-anchor: middle; }
+      .chip { font: 500 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #334155; text-anchor: middle; }
+      .flow-label { font: 500 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #64748b; text-anchor: middle; }
+      .connector { fill: none; stroke: #64748b; stroke-width: 2; marker-end: url(#arrow); }
+      .dashed { fill: none; stroke: #94a3b8; stroke-width: 2; stroke-dasharray: 7 7; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1120" fill="#f7f9fc"/>
+  <rect x="0" y="0" width="1600" height="96" fill="#ffffff"/>
+  <rect x="40" y="31" width="10" height="42" rx="5" fill="#2f8f5b"/>
+  <text class="title" x="70" y="59">PluginDeck 技术架构</text>
+  <text class="subtitle" x="1548" y="57" text-anchor="end">开放式 macOS 开发工具插件平台</text>
+
+  <!-- 生态接入层 -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="120" width="1520" height="135" rx="10" fill="#ffffff" stroke="#dbe3ec"/>
+    <path d="M50 120H230V255H50Q40 255 40 245V130Q40 120 50 120Z" fill="#207a55"/>
+  </g>
+  <text class="layer-title" x="135" y="178">生态接入层</text>
+  <text class="layer-en" x="135" y="205">ECOSYSTEM</text>
+
+  <g>
+    <rect x="270" y="145" width="240" height="84" rx="7" fill="#edf8f2" stroke="#9fd2b8"/>
+    <text class="node-title" x="390" y="178">本地目录导入</text>
+    <text class="node-sub" x="390" y="205">插件开发与调试</text>
+
+    <rect x="530" y="145" width="240" height="84" rx="7" fill="#edf8f2" stroke="#9fd2b8"/>
+    <text class="node-title" x="650" y="178">Git 仓库导入</text>
+    <text class="node-sub" x="650" y="205">公开 HTTPS Clone</text>
+
+    <rect x="790" y="145" width="240" height="84" rx="7" fill="#edf8f2" stroke="#9fd2b8"/>
+    <text class="node-title" x="910" y="178">插件市场目录</text>
+    <text class="node-sub" x="910" y="205">Catalog JSON</text>
+
+    <rect x="1050" y="145" width="470" height="84" rx="7" fill="#edf8f2" stroke="#9fd2b8"/>
+    <text class="node-title" x="1285" y="178">独立 GitHub 插件仓库</text>
+    <text class="node-sub" x="1285" y="205">Release ZIP · plugin.json · SHA-256</text>
+  </g>
+
+  <path class="dashed" d="M1285 229V244H910V270"/>
+  <text class="flow-label" x="1090" y="246">发布元数据</text>
+
+  <!-- 平台应用层 -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="280" width="1520" height="135" rx="10" fill="#ffffff" stroke="#dbe3ec"/>
+    <path d="M50 280H230V415H50Q40 415 40 405V290Q40 280 50 280Z" fill="#2d63b8"/>
+  </g>
+  <text class="layer-title" x="135" y="338">平台应用层</text>
+  <text class="layer-en" x="135" y="365">SWIFTUI APP</text>
+
+  <g>
+    <rect x="270" y="305" width="220" height="84" rx="7" fill="#eef5ff" stroke="#abc8ee"/>
+    <text class="node-title" x="380" y="338">首页</text>
+    <text class="node-sub" x="380" y="365">概览与最近活动</text>
+
+    <rect x="510" y="305" width="220" height="84" rx="7" fill="#eef5ff" stroke="#abc8ee"/>
+    <text class="node-title" x="620" y="338">插件市场</text>
+    <text class="node-sub" x="620" y="365">发现 · 导入 · 安装</text>
+
+    <rect x="750" y="305" width="220" height="84" rx="7" fill="#eef5ff" stroke="#abc8ee"/>
+    <text class="node-title" x="860" y="338">已安装</text>
+    <text class="node-sub" x="860" y="365">启停 · 更新 · 卸载</text>
+
+    <rect x="990" y="305" width="220" height="84" rx="7" fill="#eef5ff" stroke="#abc8ee"/>
+    <text class="node-title" x="1100" y="338">任务中心</text>
+    <text class="node-sub" x="1100" y="365">进度 · 结果 · 历史</text>
+
+    <rect x="1230" y="305" width="290" height="84" rx="7" fill="#eef5ff" stroke="#abc8ee"/>
+    <text class="node-title" x="1375" y="338">设置与开发者中心</text>
+    <text class="node-sub" x="1375" y="365">平台配置 · 规范参考</text>
+  </g>
+
+  <path class="connector" d="M620 389V440"/>
+
+  <!-- 核心服务层 -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="440" width="1520" height="220" rx="10" fill="#ffffff" stroke="#dbe3ec"/>
+    <path d="M50 440H230V660H50Q40 660 40 650V450Q40 440 50 440Z" fill="#137d94"/>
+  </g>
+  <text class="layer-title" x="135" y="539">核心服务层</text>
+  <text class="layer-en" x="135" y="566">PLUGINDECK CORE</text>
+
+  <g>
+    <rect x="270" y="468" width="285" height="72" rx="7" fill="#eaf8fb" stroke="#9bcbd5"/>
+    <text class="node-title" x="412" y="498">Catalog Service</text>
+    <text class="node-sub" x="412" y="521">目录同步与版本发现</text>
+
+    <rect x="575" y="468" width="285" height="72" rx="7" fill="#eaf8fb" stroke="#9bcbd5"/>
+    <text class="node-title" x="717" y="498">Manifest Validator</text>
+    <text class="node-sub" x="717" y="521">身份 · 权限 · 兼容性</text>
+
+    <rect x="880" y="468" width="285" height="72" rx="7" fill="#eaf8fb" stroke="#9bcbd5"/>
+    <text class="node-title" x="1022" y="498">Package Installer</text>
+    <text class="node-sub" x="1022" y="521">下载 · 校验 · 原子安装</text>
+
+    <rect x="1185" y="468" width="335" height="72" rx="7" fill="#eaf8fb" stroke="#9bcbd5"/>
+    <text class="node-title" x="1352" y="498">Plugin Registry</text>
+    <text class="node-sub" x="1352" y="521">安装状态与生命周期</text>
+
+    <rect x="270" y="566" width="285" height="62" rx="7" fill="#f5fafc" stroke="#b9d8df"/>
+    <text class="node-title" x="412" y="604">权限确认</text>
+    <rect x="575" y="566" width="285" height="62" rx="7" fill="#f5fafc" stroke="#b9d8df"/>
+    <text class="node-title" x="717" y="604">任务管理</text>
+    <rect x="880" y="566" width="285" height="62" rx="7" fill="#f5fafc" stroke="#b9d8df"/>
+    <text class="node-title" x="1022" y="604">更新检查</text>
+    <rect x="1185" y="566" width="335" height="62" rx="7" fill="#f5fafc" stroke="#b9d8df"/>
+    <text class="node-title" x="1352" y="604">状态持久化</text>
+  </g>
+
+  <path class="connector" d="M1022 540V559"/>
+  <path class="connector" d="M1022 628V685"/>
+
+  <!-- 插件运行层 -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="685" width="1520" height="190" rx="10" fill="#ffffff" stroke="#dbe3ec"/>
+    <path d="M50 685H230V875H50Q40 875 40 865V695Q40 685 50 685Z" fill="#c36a22"/>
+  </g>
+  <text class="layer-title" x="135" y="768">插件运行层</text>
+  <text class="layer-en" x="135" y="795">PLUGIN RUNTIME</text>
+
+  <g>
+    <rect x="270" y="716" width="245" height="82" rx="7" fill="#fff4e8" stroke="#e9b884"/>
+    <text class="node-title" x="392" y="749">插件自有 UI</text>
+    <text class="node-sub" x="392" y="775">HTML · CSS · JavaScript</text>
+
+    <rect x="555" y="716" width="245" height="82" rx="7" fill="#fff4e8" stroke="#e9b884"/>
+    <text class="node-title" x="677" y="749">WKWebView Host</text>
+    <text class="node-sub" x="677" y="775">非持久化本地页面</text>
+
+    <rect x="840" y="716" width="245" height="82" rx="7" fill="#fff4e8" stroke="#e9b884"/>
+    <text class="node-title" x="962" y="749">PluginDeck Bridge</text>
+    <text class="node-sub" x="962" y="775">invoke(action, payload)</text>
+
+    <rect x="1125" y="716" width="395" height="82" rx="7" fill="#fff4e8" stroke="#e9b884"/>
+    <text class="node-title" x="1322" y="749">External Plugin Runner</text>
+    <text class="node-sub" x="1322" y="775">独立进程 · 超时控制 · 进程树终止</text>
+  </g>
+
+  <path class="connector" d="M515 757H548"/>
+  <path class="connector" d="M800 757H833"/>
+  <path class="connector" d="M1085 757H1118"/>
+
+  <g>
+    <rect x="300" y="820" width="300" height="34" rx="17" fill="#fff8ef" stroke="#efd1aa"/>
+    <text class="chip" x="450" y="842">插件拥有输入与交互逻辑</text>
+    <rect x="650" y="820" width="270" height="34" rx="17" fill="#fff8ef" stroke="#efd1aa"/>
+    <text class="chip" x="785" y="842">Manifest 权限边界</text>
+    <rect x="970" y="820" width="420" height="34" rx="17" fill="#fff8ef" stroke="#efd1aa"/>
+    <text class="chip" x="1180" y="842">JSON-RPC 2.0 · stdin / stdout</text>
+  </g>
+
+  <path class="connector" d="M1322 798V900"/>
+  <text class="flow-label" x="1435" y="893">访问声明的本机能力</text>
+
+  <!-- 本机资源层 -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="900" width="1520" height="180" rx="10" fill="#ffffff" stroke="#dbe3ec"/>
+    <path d="M50 900H230V1080H50Q40 1080 40 1070V910Q40 900 50 900Z" fill="#6753a6"/>
+  </g>
+  <text class="layer-title" x="135" y="978">本机资源层</text>
+  <text class="layer-en" x="135" y="1005">MACOS &amp; LOCAL</text>
+
+  <g>
+    <rect x="270" y="937" width="230" height="105" rx="7" fill="#f4f1fb" stroke="#c5b9e3"/>
+    <text class="node-title" x="385" y="979">NVM / Node.js</text>
+    <text class="node-sub" x="385" y="1006">运行时版本管理</text>
+
+    <rect x="520" y="937" width="230" height="105" rx="7" fill="#f4f1fb" stroke="#c5b9e3"/>
+    <text class="node-title" x="635" y="979">端口与进程</text>
+    <text class="node-sub" x="635" y="1006">lsof · kill</text>
+
+    <rect x="770" y="937" width="230" height="105" rx="7" fill="#f4f1fb" stroke="#c5b9e3"/>
+    <text class="node-title" x="885" y="979">Shell / Terminal</text>
+    <text class="node-sub" x="885" y="1006">命令与会话</text>
+
+    <rect x="1020" y="937" width="230" height="105" rx="7" fill="#f4f1fb" stroke="#c5b9e3"/>
+    <text class="node-title" x="1135" y="979">文件与项目</text>
+    <text class="node-sub" x="1135" y="1006">配置与插件数据</text>
+
+    <rect x="1270" y="937" width="250" height="105" rx="7" fill="#f4f1fb" stroke="#c5b9e3"/>
+    <text class="node-title" x="1395" y="979">网络资源</text>
+    <text class="node-sub" x="1395" y="1006">声明域名访问</text>
+  </g>
+</svg>
